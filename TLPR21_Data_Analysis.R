@@ -229,7 +229,7 @@ bartlett.test(delt_n_S~species, data=raw2) # 0.84
 # Fig 1 MAP ---------------------------------------------------------------------
 
 # Upload MPA shapefile 
-polygons <- st_read('DATA/Map_Files/PADUS1_4MPA.shp')
+polygons <- st_read('MAP/PADUS1_4MPA.shp')
 
 # get just the puerto rico data 
 polygons$d_State_Nm <- as.character(polygons$d_State_Nm)
@@ -306,7 +306,7 @@ dev.off()
 # Fig 3 Enviro + Kd ------------------------------------------------------------
 
 # Read in data 
-enviro_merged <- read.csv('DATA/TLPR21_Environmental.csv')
+enviro_merged <- read.csv('DATA/TLPR21_Enviro.csv')
 
 # convert lum/ft^2 to lum/m^2
 enviro_merged <- enviro_merged %>%
@@ -1115,8 +1115,7 @@ for(i in 1:n){
 }
 
 ##### Save results in csv if you don't want to continuously run the bootstrap again
-
-write.csv(bootsbind, file='HERS/HERS_full_results_10000.csv', row.names=F) 
+#write.csv(bootsbind, file='HERS/HERS_full_results_10000.csv', row.names=F) 
 
 
 ##### STEP 2 SUMMARISE DATA 
