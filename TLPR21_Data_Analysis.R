@@ -7,7 +7,7 @@
 # Set up ------------------------------------------------------------------
 
 # Environment 
-set.seed(600)
+set.seed(865) #600
 setwd('~/Desktop/GITHUB/Pub-Light-Gradient-Energetics/')
 
 # Libraries
@@ -1376,7 +1376,7 @@ for(i in 1:n){
 }
 
 ##### Save results in csv if you don't want to continuously run the bootstrap again
-write.csv(bootsbind, file='HERS/HERS_full_results_depth_500_n5.csv', row.names=F) 
+write.csv(bootsbind, file='HERS/HERS_full_results_depth_500_n865.csv', row.names=F) 
 
 
 ##### STEP 2 SUMMARISE DATA 
@@ -1386,9 +1386,29 @@ write.csv(bootsbind, file='HERS/HERS_full_results_depth_500_n5.csv', row.names=F
 #bootsbind <- read.csv("DATA/TLPR21_HERS_10000.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
 #str(bootsbind)
 
-bootsbind <- bootsbind %>%
+bootsbind1 <- read.csv("HERS/HERS_full_results_depth_10_1.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
+bootsbind2 <- read.csv("HERS/HERS_full_results_depth_500_n2.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
+bootsbind3 <- read.csv("HERS/HERS_full_results_depth_500_n3.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
+bootsbind4 <- read.csv("HERS/HERS_full_results_depth_500_n4.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
+bootsbind5 <- read.csv("HERS/HERS_full_results_depth_500_n5.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
+bootsbind6 <- read.csv("HERS/HERS_full_results_depth_500_n6.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
+
+full_boots <- rbind(bootsbind1, bootsbind2)
+full_boots <- rbind(full_boots, bootsbind3)
+full_boots <- rbind(full_boots, bootsbind4)
+full_boots <- rbind(full_boots, bootsbind5)
+full_boots <- rbind(full_boots, bootsbind6)
+
+bootsbind <- full_boots %>%
   filter(HERS != "NaN") %>%
-  filter(HERS != "Inf")
+  filter(HERS != "Inf") %>%
+  filter(HERS != 0)
+
+ggplot(bootsbind3, aes(x=HERS)) + 
+  geom_histogram()
+
+ggplot(bootsbind2, aes(x=HERS)) + 
+  geom_histogram()
 
 ### sumamry stats
 # Function to calculate 95% Confidence Interval
@@ -1624,6 +1644,9 @@ all_means_species_depth <- full_join(SIBER_species_depth, raw_means_depth)
 just_means_species_depth <- all_means_species_depth  %>% select(!c(sd_host_AFDW,sd_sym_AFDW, sd_sym, sd_chl, sd_prot, sd_D, sd_cor_di, sd_cor_a, sd_cal_di, sd_cal_a)) 
 just_means_species_depth_long <- just_means_species_depth %>% pivot_longer(cols = c(mean_host_AFDW, mean_sym_AFDW, mean_sym, mean_chl, mean_prot, mean_D, mean_cor_di, mean_cor_a, mean_cal_di, mean_cal_a),  names_to = "metric", values_to = "value")
 
+#write.csv(just_means_species_depth_long, "STATS/TLPR21_SIBER_BY_DEPTH.csv", row.names = FALSE)
+just_means_species_depth_long <- read.csv('STATS/TLPR21_SIBER_BY_DEPTH.csv')
+  
 # Fig 8 Ellipse overlap vs. metrics  --------------------------------------
 
 just_means_morph_long <- just_means_species_depth_long %>%
@@ -1818,7 +1841,7 @@ ggsave("TLPR21_FigX_cor_area_SIBER.jpg", plot = metric_SIBER_CA, path = 'GRAPHS/
 ### PLOT ELLIPSES FOR ALL DEPTHS 
 
 biplots_MCAV <- ggplot(data_MCAV, aes(x=delt_c, y=delt_n, color=factor(species,measurement_order))) +
-  facet_wrap(~depth, nrow = 4, strip.position = "left") +
+  facet_wrap(~depth, nrow = 4) +
   geom_point(aes(shape =  fraction), size = 4) + 
   stat_ellipse(aes(linetype = fraction), type = "norm", size = 1.5, level=0.4) + # type norm shows them closer to how SIBER draws ellipses 
   #geom_polygon(data = hull, alpha = 0.2, aes(group = interaction(species, fraction)), linetype= "dashed", color="black", size=0.5, fill = NA) +  
@@ -1834,7 +1857,8 @@ biplots_MCAV <- ggplot(data_MCAV, aes(x=delt_c, y=delt_n, color=factor(species,m
         legend.position = "none", #legend.key.size = unit(1, "cm"),
         title = element_text(face="bold"), plot.title= element_text(hjust = 0.5), 
         axis.title.x = element_text(color="white"),
-        strip.background = element_blank(), strip.placement = "outside", strip.text = element_text(size = 30, face="bold") )
+        strip.background = element_blank(), strip.text.x = element_blank())
+       # strip.background = element_blank(), strip.placement = "outside", strip.text = element_text(size = 30, face="bold") )
 
 biplots_AAGA <- ggplot(data_AAGA, aes(x=delt_c, y=delt_n, color=factor(species,measurement_order))) +
   facet_wrap(~depth, nrow = 4) +
@@ -1853,7 +1877,6 @@ biplots_AAGA <- ggplot(data_AAGA, aes(x=delt_c, y=delt_n, color=factor(species,m
         legend.position = "none", #legend.key.size = unit(1, "cm"),
         title = element_text(face="bold"), plot.title= element_text(hjust = 0.5), 
         axis.title.y = element_blank(),
-        axis.title.x = element_text(color="white"), 
         strip.background = element_blank(), strip.text.x = element_blank()) 
 
 biplots_OFAV <- ggplot(data_OFAV, aes(x=delt_c, y=delt_n, color=factor(species,measurement_order))) +
@@ -1873,6 +1896,7 @@ biplots_OFAV <- ggplot(data_OFAV, aes(x=delt_c, y=delt_n, color=factor(species,m
         legend.position = "none", #legend.key.size = unit(1, "cm"),
         title = element_text(face="bold"), plot.title= element_text(hjust = 0.5), 
         axis.title.y = element_blank(),
+        axis.title.x = element_text(color="white"), 
         strip.background = element_blank(), strip.text.x = element_blank()) 
 
 biplots_OFRA <- ggplot(data_OFRA, aes(x=delt_c, y=delt_n, color=factor(species,measurement_order))) +
@@ -1914,7 +1938,7 @@ biplots_PAST <- ggplot(data_PAST, aes(x=delt_c, y=delt_n, color=factor(species,m
         strip.background = element_blank(), strip.text.x = element_blank()) 
 
 biplots_PPOR <- ggplot(data_PPOR, aes(x=delt_c, y=delt_n, color=factor(species,measurement_order))) +
-  facet_wrap(~depth, nrow = 4) +
+  facet_wrap(~depth, nrow = 4, strip.position = "right") +
   geom_point(aes(shape =  fraction), size = 4) + 
   stat_ellipse(aes(linetype = fraction), type = "norm", size = 1.5, level=0.4) + # type norm shows them closer to how SIBER draws ellipses 
   #geom_polygon(data = hull, alpha = 0.2, aes(group = interaction(species, fraction)), linetype= "dashed", color="black", size=0.5, fill = NA) +  
@@ -1930,18 +1954,19 @@ biplots_PPOR <- ggplot(data_PPOR, aes(x=delt_c, y=delt_n, color=factor(species,m
         legend.position = "none", #legend.key.size = unit(1, "cm"),
         title = element_text(face="bold"), plot.title= element_text(hjust = 0.5), 
         axis.title.y = element_blank(),axis.title.x = element_text(color="white"),
-        strip.background = element_blank(), strip.text.x = element_blank())
+        strip.background = element_blank(), strip.placement = "outside", strip.text = element_text(size = 30, face="bold"))
 
 legend_stack <- plot_grid(blank, blank6_fracs,
-                          ncol=1, rel_heights = c(.7,.3))
+                          ncol=1, rel_heights = c(.75,.25))
 
 biplots_depth <- plot_grid(biplots_MCAV,  biplots_OFAV, biplots_OFRA, biplots_AAGA, biplots_PAST, biplots_PPOR, legend_stack,
                            ncol = 7, 
-                           rel_widths = c(.19, .14,.14,.14,.14,.14,.11)
+                           rel_widths = c(.14, .14,.14,.14,.14,.19,.11)
                            #label_size = 25,labels = c("A", "B", "C", "D", "E"), label_x = 0.11, label_y = 0.99
 )
+biplots_depth 
 
-ggsave("TLPR21_FigS6_iso_depth.jpg", plot = biplots_depth , path = 'GRAPHS/', width = 25, height =20)
+ggsave("TLPR21_FigS6_iso_depth.jpg", plot = biplots_depth , path = 'GRAPHS/', width = 22, height =18)
 
 # DATA ANALYSIS - PERMANOVA ----------------------------------------------------------
 
