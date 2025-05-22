@@ -7,14 +7,14 @@
 # Set up ------------------------------------------------------------------
 
 # Environment 
-set.seed(865) #600
+set.seed(600) 
 setwd('~/Desktop/GITHUB/Pub-Light-Gradient-Energetics/')
 
 # Libraries
 library(tidyverse)
 library(dplyr)
-library(ggpubr)
 library(ggplot2)
+library(ggpubr)
 library(tidyr)
 library(gridExtra)    # for grid.arrange
 library(cowplot)      # arranging plots plot_grid()
@@ -404,7 +404,7 @@ enviro_DO <- ggplot(daily_DO, aes(x=as.Date(date), y=mean_DO, color=depth)) +
 #combine ecotype and treatment 
 enviro_arrange <- plot_grid(enviro_temp, enviro_light, enviro_DO, 
                             ncol = 1, align = "v",
-                            labels = c("A", "B", "C"),  label_size = 35, label_x = 0.11, label_y = 0.99)
+                            labels = c("a", "b", "c"),  label_size = 35, label_x = 0.11, label_y = 0.99)
 enviro_arrange
 
 # moved save command to include Kd
@@ -528,7 +528,7 @@ final_plot <- ggdraw() +
   draw_grob(rectGrob(gp = gpar(col = "black", fill = "white", lwd = 4)),  
             x = 0.675, y = 0.365, width = 0.3, height = 0.29) +  
   draw_plot(kd_plot, x = 0.68, y = 0.37, width = 0.28, height = 0.28)  + 
-  draw_text("D", x = 0.7, y = 0.64, size = 35, fontface = "bold")
+  draw_text("d", x = 0.7, y = 0.64, size = 35, fontface = "bold")
 
 ggsave("TLPR21_Fig3_Enviro.jpg", plot = final_plot, path = 'GRAPHS/', width = 16, height = 25)
 
@@ -1219,254 +1219,58 @@ ggsave("TLPR21_Fig6_HERS.jpg", plot = overlap.plot, path = 'GRAPHS/', width = 6,
 
 # Fig 6 HERS BY DEPTH --------------------------------------------------------------
 
-# HERS
-# Coral Niche modeling
-# Based on Fox et al. 2023 & Chei et al. 2025
+# I re-ran the HERS protocol this time seperated by depth category as well as species 
+HERS_DEPTH <- read.csv('DATA/TLPR21_HERS_10000_depth.csv') # 500
 
-##### STEP 1 - Conduct bootstrapping
-# this step takes a long time (48hrs) 
-
-# set graph theme 
-newtheme <- theme_classic() + theme(text = element_text(size=11,family="Arial"))+
-  theme(axis.text.x = element_text(size=11,colour="black"), axis.text.y = element_text(size=11,colour="black"))+
-  theme(plot.margin = unit(c(5.5,5.5,5.5,20), "pt"))+
-  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=1))+
-  theme(panel.background = element_blank())+
-  theme(axis.line = element_blank())
-
-#  Prep data 
-dat <- full %>%
-  mutate(iso1 = delt_c) %>%
-  mutate(iso2 = delt_n) %>%
-  mutate(group = fraction) %>%
-  mutate(short_depth = case_when(
-    depth == 9.14 ~ 9,
-    depth == 4.57 ~ 4,
-    depth == 16.76 ~ 16,
-    depth == 13.72 ~ 13)) %>%
-  mutate(community = paste(species, short_depth, sep = "")) %>%
-  select(c(iso1, iso2, group, community)) %>%
-  filter(iso1 != "NA") %>%
-  filter(iso2 != "NA")
-
-### RESAMPLE DATA AND MAKE NEW SIB OBJECTS
-n<-dat %>% group_by(group,community) %>% summarize(N=sum(!is.na(iso1))) %>% ungroup() %>% arrange(community)
-
-# summarize data 
-dat_sum <- dat %>%
-  group_by(group, community) %>%
-  summarise(count = n())
-
-#nest the data for resampling 
-nested<- dat %>%  group_by(group,community) %>% nest() %>% ungroup() %>% arrange(community) %>%
-  #mutate(n=c(19, 20, 17, 18, 19, 20, 20, 20, 19, 18, 19, 18)) #add sample sizes for each group/community (host and sym for one community, then the next)
-  mutate(n=c(5, 5, 5, 4, 5,5, 5,5,4,5,5,5,5,3,4,4,5,5,5,5,6,6,4,3,5,5,5,5,5,5,5,5,5,5,4,5,5,5,4,4,4,4,4,5,5,5,5,5)) 
-
-# set up stuff for the loop 
-layman<-NULL
-layman.metrics<-list()
-boots<-list()
-HERSlist <- list()
-#vars<-c("AAGA", "MCAV", "OFAV", "OFRA", "PAST", "PPOR") 
-
-vars<-c("AAGA4", "AAGA9", "AAGA13", "AAGA16", 
-        "MCAV4", "MCAV9", "MCAV13", "MCAV16", 
-        "OFAV4", "OFAV9", "OFAV13", "OFAV16", 
-        "OFRA4",  "OFRA9",  "OFRA13",  "OFRA16", 
-        "PAST4", "PAST9", "PAST13", "PAST16", 
-        "PPOR4", "PPOR9", "PPOR13", "PPOR16") 
-
-#define host and sym permutations for overlap calcs (need one unique set per "var" (e.g.,site/Season/species))\
-#hosts<-c("AAGA.H","MCAV.H","OFAV.H","OFRA.H","PAST.H","PPOR.H") 
-#syms<-c("AAGA.S","MCAV.S","OFAV.S","OFRA.S","PAST.S","PPOR.S")
-
-hosts<-c("AAGA4.H", "AAGA9.H", "AAGA13.H", "AAGA16.H", 
-         "MCAV4.H", "MCAV9.H", "MCAV13.H", "MCAV16.H", 
-         "OFAV4.H", "OFAV9.H", "OFAV13.H", "OFAV16.H", 
-         "OFRA4.H",  "OFRA9.H",  "OFRA13.H",  "OFRA16.H", 
-         "PAST4.H", "PAST9.H", "PAST13.H", "PAST16.H", 
-         "PPOR4.H", "PPOR9.H", "PPOR13.H", "PPOR16.H") 
-syms<-c("AAGA4.S", "AAGA9.S", "AAGA13.S", "AAGA16.S", 
-        "MCAV4.S", "MCAV9.S", "MCAV13.S", "MCAV16.S", 
-        "OFAV4.S", "OFAV9.S", "OFAV13.S", "OFAV16.S", 
-        "OFRA4.S",  "OFRA9.S",  "OFRA13.S",  "OFRA16.S", 
-        "PAST4.S", "PAST9.S", "PAST13.S", "PAST16.S", 
-        "PPOR4.S", "PPOR9.S", "PPOR13.S", "PPOR16.S")
-
-# number of permutations -- do 10 or 100 for quick runs and 10,000 for the official
-n=500
-
-# Run permutations 
-for(i in 1:n){  
-  cat(i,fill=T)
-  
-  # randomly sample each of the source populations with replacement for the number of samples for each group
-  samps<-nested %>% mutate(samp=map2(data,n,sample_n,replace=T))
-  
-  #unnest iterative sampled lists -- this generates 1 new df with randomly sampled data for each group,community, iso1 and iso2
-  samps2<-samps %>% dplyr::select(-data) %>% unnest(samp) %>% dplyr::select(-n) %>% 
-    dplyr::select(iso1,iso2,group,community) #reorder the colunmns
-  samps2<-as.data.frame(samps2)
-  
-  sib.boot<-createSiberObject(samps2)
-  
-  # prep for layman metrics (optional) 
-  #test1<-filter(samps2,community==1 &group=="H")
-  #test2<-filter(samps2,community==1 &group=="S")
-  #test3<-filter(samps2,community==2 &group=="H")
-  #test4<-filter(samps2,community==2 &group=="S")
-  #test5<-filter(samps2,community==3 &group=="H")
-  #test6<-filter(samps2,community==3 &group=="S")
-  #test7<-filter(samps2,community==4 &group=="H")
-  #test8<-filter(samps2,community==4 &group=="S")
-  #test9<-filter(samps2,community==5 &group=="H")
-  #test10<-filter(samps2,community==5 &group=="S")
-  #test11<-filter(samps2,community==6 &group=="H")
-  #test12<-filter(samps2,community==6 &group=="S")
-  #tests<-list(test1,test2,test3,test4,test5,test6,test7,test8,test9,test10,test11,test12)
-  
-  #   for (j in 1:12){
-  #   data<-as.data.frame(tests[[j]])
-  #   temp<-laymanMetrics(data$iso1,data$iso2)
-  #   metrics<-as.data.frame(t(temp$metrics))
-  #   metrics$community<-unique(data$community)
-  #  metrics$group<-unique(data$group)
-  #  layman<-rbind(layman,metrics)
-  #   }
-  
-  #layman.metrics[[length(layman.metrics)+1]] <- layman
-  
-  ##### Now create a siber object with the resampled data and calculate overlaps
-  sib.boot<-createSiberObject(samps2)
-  
-  #now calculate overlaps for each group based on the newly resampled SIBER data frame
-  var.num<- length(vars)
-  
-  for(k in 1:var.num){
-    host<-hosts[k]
-    sym<-syms[k]
-    
-    # This is an error catching element 
-    skip_to_next <- FALSE
-    tryCatch(maxLikOverlap(host, sym, sib.boot, p.interval = NULL, n = 100), error = function(e) { skip_to_next <<- TRUE})
-    if(skip_to_next) { next }
-    
-    # use p.interval=NULL to match Inga's paper, which estimates Maxlikelihood ellipses and are slightly more conservative than the plotted ellipses (0.4)
-    boot.overlap <- as.data.frame(t(maxLikOverlap(host, sym, sib.boot, p.interval = NULL, n = 100)))
-    boot.overlap$Species <-vars[k] ### this adds your tracking variable for each iteration of the loop so call it whatever you want (here we use Season) 
-    
-    boot.overlap_0.95 <- as.data.frame(t(maxLikOverlap(host, sym, sib.boot, p.interval = 0.95, n = 100)))
-    boot.overlap_0.95$Species<-vars[k] 
-    
-    # calculate overlap as the proportion of the host SEAc (group 1)
-    boot.overlap$Prop <-as.numeric((boot.overlap[3]/(boot.overlap[1]))^exp(-(boot.overlap[3])/(boot.overlap[2])))
-    
-    boot.overlap_0.95$Prop<-as.numeric((boot.overlap_0.95[3]/(boot.overlap_0.95[1]))^exp(-(boot.overlap_0.95[3])/(boot.overlap_0.95[2])))
-    
-    # calculate HERS score
-    HERS <- ((boot.overlap$Prop)+(boot.overlap_0.95$Prop))/2
-    HERSboots <- (as.data.frame(HERS))
-    HERSboots$Species <- vars[k]
-    
-    # gather results into list                             
-    boots[[length(boots)+1]] <- boot.overlap
-    HERSlist[[length(HERSlist)+1]] <- HERSboots
-    bootsbind <- do.call("rbind", HERSlist)
-  }
-}
-
-##### Save results in csv if you don't want to continuously run the bootstrap again
-write.csv(bootsbind, file='HERS/HERS_full_results_depth_500_n865.csv', row.names=F) 
-
-
-##### STEP 2 SUMMARISE DATA 
-
-
-# READ IN DATA 
-#bootsbind <- read.csv("DATA/TLPR21_HERS_10000.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
-#str(bootsbind)
-
-bootsbind1 <- read.csv("HERS/HERS_full_results_depth_10_1.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
-bootsbind2 <- read.csv("HERS/HERS_full_results_depth_500_n2.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
-bootsbind3 <- read.csv("HERS/HERS_full_results_depth_500_n3.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
-bootsbind4 <- read.csv("HERS/HERS_full_results_depth_500_n4.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
-bootsbind5 <- read.csv("HERS/HERS_full_results_depth_500_n5.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
-bootsbind6 <- read.csv("HERS/HERS_full_results_depth_500_n6.csv", header = T) #code to pull from saved .csv, to avoid having to rerun forloop for every figure iteration
-
-full_boots <- rbind(bootsbind1, bootsbind2)
-full_boots <- rbind(full_boots, bootsbind3)
-full_boots <- rbind(full_boots, bootsbind4)
-full_boots <- rbind(full_boots, bootsbind5)
-full_boots <- rbind(full_boots, bootsbind6)
-
-bootsbind <- full_boots %>%
-  filter(HERS != "NaN") %>%
+# clean data up 
+HERS_DEPTH_clean <- HERS_DEPTH %>%
+  #filter(HERS != 0) %>%
   filter(HERS != "Inf") %>%
-  filter(HERS != 0)
+  mutate(
+    species = str_sub(Species, 1, 4),
+    depth = str_sub(Species, 5)
+  )   %>%
+  filter(HERS > 0.000001) %>%
+  filter(HERS < 0.9999999)
 
-ggplot(bootsbind3, aes(x=HERS)) + 
-  geom_histogram()
+### Calculate means 
 
-ggplot(bootsbind2, aes(x=HERS)) + 
-  geom_histogram()
+mean_HERS <- HERS_DEPTH_clean %>% 
+  group_by(species, depth, Species) %>%
+  summarise(mean = mean(HERS), sd = sd(HERS)) %>%
+  mutate(depth = case_when(
+    depth == 4  ~ 4.57,
+    depth == 9  ~ 9.14,
+    depth == 13 ~ 13.72,
+    depth == 16 ~ 16.76,
+    TRUE ~ as.numeric(depth)  # keep other values unchanged
+  )) %>%
+  mutate(light = 1685.004 * exp(-0.1505061 * depth))
 
-### sumamry stats
-# Function to calculate 95% Confidence Interval
-ci_95 <- function(x) {
-  n <- length(x)
-  se <- sd(x) / sqrt(n)           # Standard Error
-  error_margin <- qt(0.975, df=n-1) * se  # Critical value for 95% CI
-  mean(x) + c(-error_margin, error_margin)
-}
+mean_HERS$species <- factor(mean_HERS$species, levels = c("MCAV",  "OFAV", "OFRA", "AAGA", "PAST", "PPOR"))
 
-# Summary statistics grouped by SPECIES
-df_summary <- bootsbind %>%
-  group_by(Species) %>%
-  summarise(
-    mean_value = mean(HERS, na.rm = TRUE),
-    median_value = median(HERS, na.rm = TRUE),
-    sd_value = sd(HERS, na.rm = TRUE),
-    ci_lower = ci_95(HERS)[1],
-    ci_upper = ci_95(HERS)[2]
-  )
+# I plotted the figure in a different section 
 
-df_summary
-write.csv(df_summary,file="STATS/TLPR21_Table0_HERS.csv",row.names=F) 
+# HERS BY DEPTH  - not using for now --------------------------------------
 
-### STEP 3 GRAPH! 
+### GRAPH percentiles & peaks 
+boots.ci_depth <-HERS_DEPTH_clean %>%
+  group_by(species, depth, Species) %>% #calculate summary stats for each spp at the class level
+  summarize(Mean.prop = mean(HERS,na.rm=TRUE),
+            Median.prop = median(HERS,na.rm=TRUE),
+            Mode = getmode(HERS), 
+            prop.95.upper = quantile(HERS,0.975,na.rm=TRUE),
+            prop.95.lower = quantile(HERS,0.025,na.rm=TRUE),
+            prop.75.upper = quantile(HERS,0.875,na.rm=TRUE),
+            prop.75.lower = quantile(HERS,0.125,na.rm=TRUE))
 
-colnames(bootsbind)<-c("HERS.score","Species")
+#boots.ci$Species <- factor(boots.ci$Species, levels = c("PAST", "PPOR", "AAGA","OFAV", "OFRA", "MCAV") )
 
-#bootsbind$Species <- factor(bootsbind$Species, 
-                            #levels = c("PAST", "PPOR", "AAGA","OFAV", "OFRA", "MCAV"))
-str(bootsbind)
-
-#create mode function to calculate mode of each distribution of different metrics
-getmode <- function(v) {
-  uniqv <- unique(v)
-  uniqv[which.max(tabulate(match(v, uniqv)))]
-}
-
-boots.ci<-bootsbind %>%
-  group_by(Species) %>% #calculate summary stats for each spp at the class level
-  summarize(Mean.prop = mean(HERS.score,na.rm=TRUE),
-            Median.prop = median(HERS.score,na.rm=TRUE),
-            Mode = getmode(HERS.score), 
-            prop.95.upper = quantile(HERS.score,0.975,na.rm=TRUE),
-            prop.95.lower = quantile(HERS.score,0.025,na.rm=TRUE),
-            prop.75.upper = quantile(HERS.score,0.875,na.rm=TRUE),
-            prop.75.lower = quantile(HERS.score,0.125,na.rm=TRUE))
-
-#boots.ci$Species <- factor(boots.ci$Species, 
-                        #   levels = c("PAST", "PPOR", "AAGA","OFAV", "OFRA", "MCAV") )
-
-#plot ovrelap w/ 95 and 75% CI for each year/species variable
-
-pmain<-ggplot(boots.ci,aes(x=Median.prop,y=Species,xmin=prop.95.lower,xmax=prop.95.upper,color=Species))+
+pmain<-ggplot(boots.ci_depth,aes(x=Median.prop, y=Species, xmin=prop.95.lower, xmax=prop.95.upper, color=species))+
   geom_errorbarh(linewidth=1.5,height=0)+
-  geom_errorbarh(data=boots.ci,mapping=aes(x=Mean.prop,y=Species,
+  geom_errorbarh(data=boots.ci_depth ,mapping=aes(x=Mean.prop, y=Species,
                                            xmin=prop.75.lower,xmax=prop.75.upper),linewidth=3.5,height=0)+
-  geom_point(aes(fill=Species),size=5,pch=21,col='black')+
+  geom_point(aes(fill=species),size=5,pch=21,col='black')+
   scale_color_manual(values=c("#00a8e8","#2832c2", "#fec506","#74c476","#004418","#ee2363"))+ #fix these colors to match plots
   scale_fill_manual(values=c("#00a8e8","#2832c2", "#fec506","#74c476","#004418","#ee2363"))+ #fix these colors to match plots
   labs(y="", x = "HERS Score")+
@@ -1477,25 +1281,28 @@ pmain<-ggplot(boots.ci,aes(x=Median.prop,y=Species,xmin=prop.95.lower,xmax=prop.
         axis.text.x = element_text(size=12) 
         #axis.title.y = element_bold()
   )+
-  geom_text(data=boots.ci, mapping=aes(x=Mean.prop,y=as.factor(Species),
+  geom_text(data=boots.ci_depth, mapping=aes(x=Mean.prop,y=as.factor(species),
                                        label=round(Mean.prop,2),vjust=-1.5, hjust=.4))+
   geom_vline(xintercept=0.5,lty=2)#+
 #annotation_custom(het)+annotation_custom(auto)
 pmain
 
-# create the marginal histogram to illustrate the full distribution of resampled overlaps 
-bootsbind$Species<-ordered(bootsbind$Species,levels=c("OFAV", "OFRA","MCAV","PAST","PPOR", "AAGA" ))
+HERS_AAGA <- HERS_DEPTH_clean %>% #filter(species == "OFRA") 
+  filter(HERS > 0.000001) %>%
+  filter(HERS < 0.9999999)
 
-xdens<-axis_canvas(pmain,axis="x")+
-  geom_density(data=bootsbind,mapping=aes(x=HERS.score,fill=Species),alpha=0.5,size=.2)+
-  scale_fill_manual(values=c("#74c476","#004418","#ee2363", "#00a8e8","#2832c2", "#fec506"))
+xdens<- axis_canvas(pmain,axis="x") +
+  geom_density(data=HERS_AAGA, mapping=aes(x=HERS, fill=Species), alpha=0.5,size=.2)#+
+  #scale_fill_manual(values=c("#74c476","#004418","#ee2363", "#00a8e8","#2832c2", "#fec506"))
 xdens
+
+
 
 #combine the plots 
 overlap.plot<-insert_xaxis_grob(pmain,xdens,grid::unit(.5,"null"),position="top")
 ggdraw(overlap.plot)
 
-ggsave("TLPR21_Fig6_HERS.jpg", plot = overlap.plot, path = 'GRAPHS/', width = 6, height= 8)
+#ggsave("TLPR21_Fig6_HERS.jpg", plot = overlap.plot, path = 'GRAPHS/', width = 6, height= 8)
 
 # DATA ANALYSIS - SIBER by depth  ----------------------------------------------------------
 
@@ -2025,21 +1832,16 @@ just_means_species_depth <- just_means_species_depth %>%
 just_means_species_depth$species <- factor(just_means_species_depth$species, levels = c("MCAV",  "OFAV", "OFRA", "AAGA", "PAST", "PPOR"))
 
 depth_species_cent <- ggplot(just_means_species_depth, aes(x=light, y = centroid_distance)) + 
-  geom_point() +
-  geom_smooth(method = "lm", aes(color = species)) + 
+  geom_point(aes(color = species), size = 5) +
+  geom_line(aes(color = species), size =1, linetype = "dotted") +
   scale_color_manual(values = custom_palette) +
   facet_wrap(~species, nrow = 1) + 
-  stat_fit_glance(
-    method = "lm",
-    method.args = list(formula = formula),
-    geom = "text",
-    aes(
-      label = paste(
-      #  "R² = ", signif(..r.squared.., digits = 2),
-        "P = ", signif(..p.value.., digits = 2), 
-        sep = " ")),
-    size = 4, hjust = 0, vjust = -8
-  ) +
+  stat_cor(
+    method = "spearman",
+    label.x.npc = "left",
+    label.y.npc = "top",
+    size = 5
+  ) + 
   scale_y_continuous(labels = scales::number_format(accuracy = 0.1)) + 
   scale_x_continuous(labels = scales::number_format(accuracy = 1)) + 
   theme_bw() + 
@@ -2048,38 +1850,61 @@ depth_species_cent <- ggplot(just_means_species_depth, aes(x=light, y = centroid
         axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank(),
         strip.background = element_blank(), strip.text = element_text(face = "bold"),
         legend.position="none") +
-  labs(y = "Centroid Distance (‰)")
+  labs(y = "Centroid Distance (‰)") +
+  ylim(0,6.8)
 
 depth_species_overlap <- ggplot(just_means_species_depth, aes(x=light, y = overlap)) + 
-  geom_point() +
-  geom_smooth(method = "lm", aes(color = species)) + 
+  geom_point(aes(color = species), size = 5) +
+  geom_line(aes(color = species), size =1, linetype = "dotted") +
   scale_color_manual(values = custom_palette) +
   facet_wrap(~species,  nrow = 1) + 
-  stat_fit_glance(
-    method = "lm",
-    method.args = list(formula = formula),
-    geom = "text",
-    aes(
-      label = paste(
-      #  "R² = ", signif(..r.squared.., digits = 2),
-        "P = ", signif(..p.value.., digits = 2), 
-        sep = " ")),
-    size = 4, hjust = 0, vjust = -7
-  )  +
+  stat_cor(
+    method = "spearman",
+    label.x.npc = "left",
+    label.y.npc = "top",
+    size = 5
+  ) + 
   scale_y_continuous(labels = scales::number_format(accuracy = 0.1)) + 
   scale_x_continuous(labels = scales::number_format(accuracy = 1)) + 
   theme_bw() + 
   theme(text = element_text(size=20), 
         axis.title.y = element_text(face= "bold"), 
-        axis.title.x = element_text(face= "bold"),
+        axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank(),
         strip.background = element_blank(), strip.text = element_blank(),
         legend.position="none") +
-  labs(x=  bquote(bold("Light (lum"~m^{-2}*")")), y = "Ellipse Overlap (%)")
+  labs(x=  bquote(bold("Light (lum"~m^{-2}*")")), y = "Ellipse Overlap (%)") +
+  ylim(0,0.5)
 
-depth_species <- plot_grid(depth_species_cent,depth_species_overlap,
+plot_hers_depth <- ggplot(mean_HERS, aes(x = as.numeric(light), y = as.numeric(mean))) + 
+  geom_point(aes(color = species), size = 5) +
+  geom_line(aes(color = species), size =1, linetype = "dotted") +
+  scale_color_manual(values = custom_palette) +
+  facet_wrap(~species, nrow = 1) + 
+  stat_cor(
+    method = "spearman",
+    label.x.npc = "left",
+    label.y.npc = "top",
+    size = 5
+  ) + 
+  scale_y_continuous(labels = scales::number_format(accuracy = 0.1)) + 
+  scale_x_continuous(labels = scales::number_format(accuracy = 1)) + 
+  theme_bw() + 
+  theme(text = element_text(size = 20), 
+        axis.title.y = element_text(face = "bold"), 
+        axis.title.x = element_text(face = "bold"),
+        strip.background = element_blank(), 
+        strip.text = element_blank(),
+        legend.position = "none") +
+  labs(
+    x = bquote(bold("Light (lum" ~ m^{-2} * ")")), 
+    y = "HERS"
+  ) +
+  ylim(0,.8)
+
+depth_species <- plot_grid(depth_species_cent,depth_species_overlap, plot_hers_depth, 
                            ncol = 1, align = "v")
 
-ggsave("TLPR21_Fig7_iso_depth_species.jpg", plot = depth_species, path = 'GRAPHS/', width = 15, height =10)
+ggsave("TLPR21_Fig7_iso_depth_species.jpg", plot = depth_species, path = 'GRAPHS/', width = 15, height =15)
 
 # Fig 4 Correlation heatmap -----------------------------------------------------
 
@@ -2241,7 +2066,7 @@ my_labeller <- as_labeller(c(
   D =  "Corallite~Density~'(' * per~cm^2 * ')'"),
   default = label_parsed)
 
-all_means <- ggplot(raw2_long, aes(x=species, y=value, fill=species)) +
+all_median <- ggplot(raw2_long, aes(x=species, y=value, fill=species)) +
   geom_boxplot() + 
   scale_fill_manual(values = custom_palette) + 
   facet_wrap(~ measurement, scales="free", 
@@ -2256,7 +2081,7 @@ all_means <- ggplot(raw2_long, aes(x=species, y=value, fill=species)) +
   ) +
   labs(x = "Species", fill = "Species")
 
-ggsave("TLPR21_FigS4_means.jpg", plot = all_means, path = 'GRAPHS/', width = 15, height = 15)
+ggsave("TLPR21_FigS4_medians.jpg", plot = all_median, path = 'GRAPHS/', width = 15, height = 15)
 
 # Fig X Depth & Light---------------------------------------------------
 
