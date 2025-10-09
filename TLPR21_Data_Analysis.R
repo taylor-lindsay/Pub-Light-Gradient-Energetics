@@ -3,6 +3,7 @@
 # Chapter 1 
 # LIGHT MODULATES MORPHOLOGY MORE THAN TROPHIC AND PHYSIOLOGICAL DYNAMICS OF SIX CARIBBEAN CORALS  
 # March 2025
+# Updated Oct 2025 after first review 
 
 # Set up ------------------------------------------------------------------
 
