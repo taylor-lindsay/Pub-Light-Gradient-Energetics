@@ -310,8 +310,8 @@ dev.off()
 enviro_merged <- read.csv('DATA/TLPR21_Enviro.csv')
 
 # convert lum/ft^2 to lum/m^2
-enviro_merged <- enviro_merged %>%
-  mutate(LightRaw = LightRaw*0.09290304)
+#enviro_merged <- enviro_merged %>%
+  #mutate(LightRaw = log(LightRaw))
 
 # include only times 1hr before and after sunrise (6am) and set (7pm)
 
@@ -319,13 +319,19 @@ enviro_merged <- enviro_merged %>%
 
 # daily means 
 daily_light <- enviro_merged %>%
-  group_by(date,depth) %>%
+  group_by(date, depth) %>%
   summarize(mean_light = mean(LightRaw, na.rm = TRUE),
             sd_light = sd(LightRaw, na.rm = TRUE)) %>%
-  ungroup(date) %>%
-  filter(.$date < as.Date("2021-08-14")) %>%
-  mutate(sd_min = mean_light-sd_light) %>%
-  mutate(sd_max = mean_light+sd_light)
+  ungroup() %>%  # Remove ALL grouping
+  filter(date < as.Date("2021-08-14")) %>%
+  mutate(
+    max_light = max(mean_light, na.rm = TRUE),  # Calculate max once
+    mean_light = (mean_light / max_light) * 100,
+    sd_light = (sd_light / max_light) * 100
+  ) %>%
+  select(-max_light) %>%
+  mutate(sd_min = mean_light - sd_light) %>%
+  mutate(sd_max = mean_light + sd_light) 
 
 daily_DO <- enviro_merged %>%
   group_by(date,depth) %>%
@@ -382,7 +388,7 @@ enviro_light <- ggplot(daily_light, aes(x=as.Date(date), y=mean_light, color=dep
     axis.text.x = element_blank(), 
     axis.ticks.x= element_blank()
   ) +
-  labs(y = expression("Mean Daily Light (lum m"^{-2}*")"), x = "") +
+  labs(y = expression("Mean Light (%)"), x = "") +
   scale_x_date(limits = as.Date(c('2021-07-12','2021-09-01')))
 enviro_light
 
@@ -463,54 +469,31 @@ write.csv(all_enviro, "STATS/TLPR21_Table0_Enviro_t-test.csv", row.names = FALSE
 # Iz is the light intensity at depth z, 
 # z1 and z2 are the two depths you are measuring between
 
-# calculate means 
+# load data 
+data_kd <- read.csv('DATA/PAM_Kd.csv') 
 
-light_5m <- enviro_merged %>%
-  filter(depth == "shallow") %>%
-  summarise(mean_LightRaw = mean(LightRaw, na.rm = TRUE)) %>%
-  pull(mean_LightRaw)
-
-light_18m <- enviro_merged %>%
-  filter(depth == "deep") %>%
-  summarise(mean_LightRaw = mean(LightRaw, na.rm = TRUE)) %>%
-  pull(mean_LightRaw)
-
-Kd <- (log(light_5m)- log(light_18m))/(18-5)
-Kd <- 0.151
-# Kd = 0.1505061 
+# Set Kd and surface values (I0)
+I0 <- 782.63 #500.42
+Kd <-  0.205 #0.175
 
 depth_seq <- seq(0, 20, by = 0.1)  
-
-# calculate surface intensity 
-I0 <- light_5m / exp(-Kd * 5)  # Estimate surface intensity using 5m point
-I0
 
 # Calculate light intensity at each depth
 intensity_curve <- I0 * exp(-Kd * depth_seq)
 
 # Create data frames for plotting
 data_curve <- data.frame(Depth = depth_seq, Intensity = intensity_curve)
-data_points <- data.frame(Depth = c(5, 18), Intensity = c(light_5m, light_18m))
 
-# write function 
-light_function <- function(Depth) {
-  Intensity <- 1685.004 * exp(-0.1505061 * Depth)
-  return(Intensity)
-}
-
-# Plot with ggplot2
-kd_plot <- ggplot() +
-  geom_line(data = data_curve, aes(x = Intensity, y = Depth), color = "black", size = 3) +  # Exponential curve
-  geom_point(data = data_points, aes(x = Intensity, y = Depth), color = "red", size = 5) +  # Observed points
-  scale_y_reverse() +  # Reverse y-axis so surface is at the top
-  labs(x = expression("Mean Daily Light (lum m"^{-2}*")"), y = "Depth (m)") +
+# make plot 
+kd_plot <- ggplot(data_kd, aes(x = Light.CRRX, y = Depth.CRRX)) +
+  geom_line(data = data_curve, aes(x = Intensity, y = Depth), color = "red", size = 3) +  # Exponential curve
+  geom_point() + 
+  scale_y_reverse() +
+  labs(x = "Light (μmol quanta m⁻² s⁻¹)",  y = "Depth (m)") + 
   theme_bw() + 
   theme(legend.position="none", 
         text = element_text(size=25))
-kd_plot
-
-# optionally save just Kd
-#ggsave("TLPR21_Fig_Kd.jpg", plot = kd_plot, path = '~/Desktop/TLPR21_Manuscript/GRAPHS/', width = 8, height =10)
+kd_plot 
 
 # add kd_plot to enviro plot 
 
@@ -537,7 +520,7 @@ ggsave("TLPR21_Fig3_Enviro.jpg", plot = final_plot, path = 'GRAPHS/', width = 16
 
 # add Kd
 raw2 <- raw2 %>%
-  mutate(act_light = 156.929 * exp(-0.151 * act_depth))
+  mutate(act_light = 782.63 * exp(-0.205 * act_depth))
 
 # prep phys data 
 raw_long <- raw %>%
@@ -1246,7 +1229,7 @@ mean_HERS <- HERS_DEPTH_clean %>%
     depth == 16 ~ 16.76,
     TRUE ~ as.numeric(depth)  # keep other values unchanged
   )) %>%
-  mutate(light = 1685.004 * exp(-0.1505061 * depth))
+  mutate(light = 782.63 * exp(-0.205 * depth))
 
 mean_HERS$species <- factor(mean_HERS$species, levels = c("MCAV",  "OFAV", "OFRA", "AAGA", "PAST", "PPOR"))
 
@@ -1778,25 +1761,21 @@ ggsave("TLPR21_FigS6_iso_depth.jpg", plot = biplots_depth , path = 'GRAPHS/', wi
 
 # DATA ANALYSIS - PERMANOVA ----------------------------------------------------------
 
-model <- adonis(cbind(delt_n, delt_c) ~ fraction, data = data_MCAV, method = "euclidean", permutations = 999)
-results_df <- as.data.frame(model$aov.tab)
-results_df$species <- "MCAV"
-
 perform_adonis <- function(data, species_name = "MCAV") {
+  
+  response_vars <- cbind(data$delt_n, data$delt_c)
+  
   # Perform PERMANOVA with fixed settings
-  model <- adonis(cbind(delt_n, delt_c) ~ fraction, 
+  model <- adonis2(response_vars ~ fraction, 
                   data = data, 
                   method = "euclidean", 
                   permutations = 999)
   
-  # Extract the ANOVA table as a data frame
-  results_df <- as.data.frame(model$aov.tab)
-  
   # Add species column
-  results_df$species <- species_name
+  model$species <- species_name
   
   # Return the results
-  return(results_df)
+  return(model)
 }
 
 # Example usage
@@ -1824,11 +1803,10 @@ PERMANOVA_results <- do.call(rbind, PERM_list)
 # save dataframe 
 write.csv(PERMANOVA_results, "STATS/TLPR21_Table1_PERMANOVA.csv", row.names = FALSE)
 
-
 # Fig 7 Do CD or CO change with depth? ---------------------------------------------------------------------
 
 just_means_species_depth <- just_means_species_depth %>%
-  mutate(light = 1685.004 * exp(-0.1505061 * depth))
+  mutate(light = 1685.004 * exp(-0.174 * depth))
 
 just_means_species_depth$species <- factor(just_means_species_depth$species, levels = c("MCAV",  "OFAV", "OFRA", "AAGA", "PAST", "PPOR"))
 
@@ -1873,7 +1851,7 @@ depth_species_overlap <- ggplot(just_means_species_depth, aes(x=light, y = overl
         axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank(),
         strip.background = element_blank(), strip.text = element_blank(),
         legend.position="none") +
-  labs(x=  bquote(bold("Light (lum"~m^{-2}*")")), y = "Ellipse Overlap (%)") +
+  labs(x = expression("Light (μmol quanta m"^{-2}*"s"^{-1}*")"), y = "Ellipse Overlap (%)") +
   ylim(0,0.5)
 
 plot_hers_depth <- ggplot(mean_HERS, aes(x = as.numeric(light), y = as.numeric(mean))) + 
@@ -1897,7 +1875,7 @@ plot_hers_depth <- ggplot(mean_HERS, aes(x = as.numeric(light), y = as.numeric(m
         strip.text = element_blank(),
         legend.position = "none") +
   labs(
-    x = bquote(bold("Light (lum" ~ m^{-2} * ")")), 
+    x = "Light (μmol quanta m⁻² s⁻¹)",
     y = "HERS"
   ) +
   ylim(0,.8)
@@ -2037,7 +2015,7 @@ heatmap
 
 ggsave("TLPR21_Fig4_heatmap.jpg", plot = heatmap, path = 'GRAPHS/', width = 15, height =15)
 
-# Fig S3 means  -------------------------------------------------------
+# Fig S4 medians  -------------------------------------------------------
 
 raw2_long <- raw2 %>%
   select(!c(depth, act_depth, site, sample_id, act_depth, act_light)) %>%
@@ -2174,7 +2152,7 @@ light_SCN <- ggplot(raw2, aes(y = cn_ratio_S, x = act_light, fill = species)) +
   # AESTHETICS 
   scale_fill_manual(values = custom_palette) +
   scale_x_continuous( breaks = scales::pretty_breaks(n = 4)) +
-  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (lum"~m^{-2}*")")),) +
+  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +    #"Light (μmol quanta m⁻² s⁻¹)"
   theme_minimal() + 
   theme(text = element_text(size=20),  
         legend.position="none", 
@@ -2223,7 +2201,7 @@ light_cor_a <- ggplot(raw2, aes(y = cor_a, x = act_light, fill = species)) +
   # AESTHETICS 
   scale_fill_manual(values = custom_palette) +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01)) + 
-  labs(y = bquote(bold("Corallite area (cm²)")), x = bquote(bold("Light (lum"~m^{-2}*")")), fill = "Species") +
+  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +    #"Light (μmol quanta m⁻² s⁻¹)"
   theme_minimal() + 
   theme(text = element_text(size=20),   
         axis.title.x = element_blank(), axis.text.x = element_blank(), 
@@ -2239,7 +2217,7 @@ light_cal_di <- ggplot(raw2, aes(y = cal_di, x = act_light, fill = species)) +
   scale_fill_manual(values = custom_palette) +
   #scale_x_continuous(breaks = scales::pretty_breaks(n = 3)) + 
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01)) + 
-  labs(y = bquote(bold("Calice diameter (cm)")), x = bquote(bold("Light (lum"~m^{-2}*")"))) +
+  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +    #"Light (μmol quanta m⁻² s⁻¹)"
   theme_minimal() + 
   theme(text = element_text(size=20),   
         legend.position="none", 
@@ -2255,7 +2233,7 @@ light_cal_a <- ggplot(raw2, aes(y = cal_a, x = act_light, fill = species)) +
   scale_fill_manual(values = custom_palette) +
   #scale_x_continuous(breaks = scales::pretty_breaks(n = 3)) + 
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01)) + 
-  labs(y = bquote(bold("Calice area (cm²)")), x = bquote(bold("Light (lum"~m^{-2}*")"))) +
+  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +    #"Light (μmol quanta m⁻² s⁻¹)"
   theme_minimal() + 
   theme(text = element_text(size=20),   
         legend.position="none", 
@@ -2343,7 +2321,7 @@ light_chl <- ggplot(raw2, aes(y = chla.ug.cm2, x = act_light, fill = species)) +
   theme(text = element_text(size=20),  
         legend.position="none", 
         strip.text.x = element_blank())
-
+light_chl
 
 light_arrange_phys <- plot_grid(light_prot, light_AFDW_H, light_AFDW_S, light_sym, light_chl, 
                                 ncol = 1, align = "v")
