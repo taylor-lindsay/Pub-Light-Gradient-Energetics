@@ -358,18 +358,18 @@ enviro_temp <- ggplot(daily_temp, aes(x=as.Date(date), y=mean_temp, color=depth)
   geom_ribbon(aes(ymin=sd_min, ymax=sd_max, color=depth, fill = depth), alpha = 0.3, colour = NA) + ###
   geom_line(size=2) +
   geom_point(size=4) + 
-  scale_color_manual(values = c("#66BBBB", "#3E3ED1")) + 
-  scale_fill_manual(values = c("#66BBBB", "#3E3ED1")) +
+  scale_color_manual(values = c("#66BBBB", "#3E3ED1"), labels = c("5 m", "18 m")) + 
+  scale_fill_manual(values = c("#66BBBB", "#3E3ED1"), labels = c("5 m", "18 m")) +
   # Aesthetics 
   theme_bw() + 
   theme(
-    legend.position=c(.1, .6), 
+    legend.position=c(.2, .8), 
     legend.box.background = element_rect(color="black", size=1.5), 
     text = element_text( size=35), 
     axis.text.x = element_blank(), 
     axis.ticks.x= element_blank()
   )+ 
-  labs(y = "Mean Temperature (˚C)", x = "", fill = "Depth (m)", color = "Depth (m)") +
+  labs(y = "Mean Temperature (˚C)", x = "", fill = "Depth", color = "Depth") +
   scale_x_date(limits = as.Date(c('2021-07-12','2021-09-01')))
 enviro_temp
 
@@ -472,9 +472,27 @@ write.csv(all_enviro, "STATS/TLPR21_Table0_Enviro_t-test.csv", row.names = FALSE
 # load data 
 data_kd <- read.csv('DATA/PAM_Kd.csv') 
 
-# Set Kd and surface values (I0)
-I0 <- 782.63 #500.42
-Kd <-  0.205 #0.175
+# Calculate Kd and I0
+
+# use a linear model to find best values 
+linear_model <- lm(log(Light.CRRX) ~ Depth.CRRX, data = data_kd)
+a_start <- exp(coef(linear_model)[1])
+b_start <- coef(linear_model)[2]
+
+# run model 
+nls_model <- nls(Light.CRRX ~ a * exp(b * Depth.CRRX),
+                 data = data_kd,
+                 start = list(a = a_start, b = b_start))
+
+# Extract coefficients
+I0 <- coef(nls_model)["a"]
+Kd <- abs(coef(nls_model)["b"])
+
+print(I0, digits = 15)
+
+# VALUES FROM EXCEL 
+#I0 <- 782.63 #500.42
+#Kd <-  0.205 #0.175
 
 depth_seq <- seq(0, 20, by = 0.1)  
 
@@ -487,40 +505,56 @@ data_curve <- data.frame(Depth = depth_seq, Intensity = intensity_curve)
 # make plot 
 kd_plot <- ggplot(data_kd, aes(x = Light.CRRX, y = Depth.CRRX)) +
   geom_line(data = data_curve, aes(x = Intensity, y = Depth), color = "red", size = 3) +  # Exponential curve
-  geom_point() + 
+  geom_point(size=4) + 
   scale_y_reverse() +
   labs(x = "Light (μmol quanta m⁻² s⁻¹)",  y = "Depth (m)") + 
   theme_bw() + 
   theme(legend.position="none", 
-        text = element_text(size=25))
+        text = element_text(size=35),
+        plot.margin = margin(t = 5.5, r = 25, b = 5.5, l = 5.5)) 
 kd_plot 
 
 # add kd_plot to enviro plot 
 
-inset_grob <- ggplotGrob(kd_plot)
-final_plot <- enviro_light +
-  annotation_custom(inset_grob, xmin = 0, xmax = 0, ymin = 500, ymax = 500)  
-final_plot
+#inset_grob <- ggplotGrob(kd_plot)
+#final_plot <- enviro_light +
+ # annotation_custom(inset_grob, xmin = 0, xmax = 0, ymin = 500, ymax = 500)  
+#final_plot
 
 # Create the inset plot
-kd_inset <- kd_plot + theme_minimal()  # Keep it simple for better visibility
+#kd_inset <- kd_plot + theme_minimal()  # Keep it simple for better visibility
 
 # combine plots 
-final_plot <- ggdraw() +
+#final_plot <- ggdraw() +
   # Main plot (full background)
-  draw_plot(enviro_arrange, x = 0, y = 0, width = 1, height = 1) +  
-  draw_grob(rectGrob(gp = gpar(col = "black", fill = "white", lwd = 4)),  
-            x = 0.675, y = 0.365, width = 0.3, height = 0.29) +  
-  draw_plot(kd_plot, x = 0.68, y = 0.37, width = 0.28, height = 0.28)  + 
-  draw_text("d", x = 0.7, y = 0.64, size = 35, fontface = "bold")
+  #draw_plot(enviro_arrange, x = 0, y = 0, width = 1, height = 1) +  
+  #draw_grob(rectGrob(gp = gpar(col = "black", fill = "white", lwd = 4)),  
+  #          x = 0.675, y = 0.365, width = 0.3, height = 0.29) +  
+  #draw_plot(kd_plot, x = 0.68, y = 0.37, width = 0.28, height = 0.28)  + 
+  #draw_text("d", x = 0.7, y = 0.64, size = 35, fontface = "bold")
 
-ggsave("TLPR21_Fig3_Enviro.jpg", plot = final_plot, path = 'GRAPHS/', width = 16, height = 25)
+#ggsave("TLPR21_Fig3_Enviro.jpg", plot = final_plot, path = 'GRAPHS/', width = 16, height = 25)
+
+#### NEW ARRANGEMENT 
+
+#combine ecotype and treatment 
+enviro_arrange2 <- plot_grid(enviro_temp, enviro_DO, 
+                            ncol = 1, align = "v",
+                            labels = c("b", "c"),  label_size = 35, label_x = 0.12, label_y = 0.99)
+enviro_arrange2
+
+enviro_arrange_all <- plot_grid(kd_plot, enviro_arrange2, 
+                             ncol = 2,
+                             labels = c("a", ""),  label_size = 35, label_x = 0.1, label_y = 0.99)
+
+ggsave("TLPR21_Fig3_Enviro2.jpg", plot = enviro_arrange_all, path = 'GRAPHS/', width = 25, height = 16)
+
 
 # DATA PREP - Phys & morph   -----------------------------------------------------------
 
 # add Kd
 raw2 <- raw2 %>%
-  mutate(act_light = 782.63 * exp(-0.205 * act_depth))
+  mutate(act_light = I0 * exp(-Kd * act_depth))
 
 # prep phys data 
 raw_long <- raw %>%
@@ -1229,7 +1263,7 @@ mean_HERS <- HERS_DEPTH_clean %>%
     depth == 16 ~ 16.76,
     TRUE ~ as.numeric(depth)  # keep other values unchanged
   )) %>%
-  mutate(light = 782.63 * exp(-0.205 * depth))
+  mutate(light = I0 * exp(-Kd * depth))
 
 mean_HERS$species <- factor(mean_HERS$species, levels = c("MCAV",  "OFAV", "OFRA", "AAGA", "PAST", "PPOR"))
 
@@ -1475,7 +1509,7 @@ metric_overlap <- ggplot(just_means_morph_long, aes(x = overlap, y = value)) +
   #   aes(label = paste(
   #       "R² = ", signif(..r.squared.., digits = 2),
   #       "P = ", signif(..p.value.., digits = 3), 
-  #       sep = " ")),size = 4, hjust = 0, #vjust = 1 ) +
+  #       sep = " ")),size = 4, hjust = 0) +
   theme_bw() +
   theme(text = element_text(size=20), 
         strip.background = element_blank(), strip.text= element_text(face="bold"),
@@ -1495,7 +1529,7 @@ metric_cent <- ggplot(just_means_morph_long, aes(x = centroid_distance, y = valu
   #   aes(label = paste(
   #       "R² = ", signif(..r.squared.., digits = 2),
   #       "P = ", signif(..p.value.., digits = 3), 
-  #       sep = " ")),size = 4, hjust = 0, #vjust = 1 ) +
+  #       sep = " ")),size = 4, hjust = 0) +
   theme_bw() +
   theme(text = element_text(size=20), 
         strip.background = element_blank(), strip.text= element_text(face="bold"),
@@ -1541,6 +1575,7 @@ metric_overlap_cal <- ggplot(just_means_morph_long_cal, aes(x = overlap, y = val
         legend.position = "none"
   ) +
   labs(x = "Ellipse Overlap (%)", y = "", color = "Species", shape = "Depth (m)")
+metric_overlap_cal
 
 metric_cent_cal <- ggplot(just_means_morph_long_cal, aes(x = centroid_distance, y = value)) + 
   facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
@@ -1568,6 +1603,7 @@ metric_cent_cal <- ggplot(just_means_morph_long_cal, aes(x = centroid_distance, 
         legend.position = "none"
   ) +
   labs(x = "Centroid Distance (‰)", y = "", color = "Species", shape = "Depth (m)")
+metric_cent_cal
 
 metric_SIBER <- plot_grid(metric_cent, metric_overlap, ncol = 1)
 metric_SIBER_cal <- plot_grid(metric_cent_cal, metric_overlap_cal, ncol = 1)
@@ -1806,7 +1842,7 @@ write.csv(PERMANOVA_results, "STATS/TLPR21_Table1_PERMANOVA.csv", row.names = FA
 # Fig 7 Do CD or CO change with depth? ---------------------------------------------------------------------
 
 just_means_species_depth <- just_means_species_depth %>%
-  mutate(light = 1685.004 * exp(-0.174 * depth))
+  mutate(light = I0 * exp(-Kd * depth))
 
 just_means_species_depth$species <- factor(just_means_species_depth$species, levels = c("MCAV",  "OFAV", "OFRA", "AAGA", "PAST", "PPOR"))
 
@@ -2201,7 +2237,7 @@ light_cor_a <- ggplot(raw2, aes(y = cor_a, x = act_light, fill = species)) +
   # AESTHETICS 
   scale_fill_manual(values = custom_palette) +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01)) + 
-  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +    #"Light (μmol quanta m⁻² s⁻¹)"
+  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +   
   theme_minimal() + 
   theme(text = element_text(size=20),   
         axis.title.x = element_blank(), axis.text.x = element_blank(), 
@@ -2217,7 +2253,7 @@ light_cal_di <- ggplot(raw2, aes(y = cal_di, x = act_light, fill = species)) +
   scale_fill_manual(values = custom_palette) +
   #scale_x_continuous(breaks = scales::pretty_breaks(n = 3)) + 
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01)) + 
-  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +    #"Light (μmol quanta m⁻² s⁻¹)"
+  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +  
   theme_minimal() + 
   theme(text = element_text(size=20),   
         legend.position="none", 
@@ -2233,7 +2269,7 @@ light_cal_a <- ggplot(raw2, aes(y = cal_a, x = act_light, fill = species)) +
   scale_fill_manual(values = custom_palette) +
   #scale_x_continuous(breaks = scales::pretty_breaks(n = 3)) + 
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01)) + 
-  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +    #"Light (μmol quanta m⁻² s⁻¹)"
+  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +   
   theme_minimal() + 
   theme(text = element_text(size=20),   
         legend.position="none", 
@@ -2316,7 +2352,7 @@ light_chl <- ggplot(raw2, aes(y = chla.ug.cm2, x = act_light, fill = species)) +
   # AESTHETICS 
   scale_fill_manual(values = custom_palette) +
   scale_x_continuous( breaks = scales::pretty_breaks(n = 4)) +
-  labs(y = bquote(bold("Chlorophyll a (μg/cm²)")), x = bquote(bold("Light (lum"~m^{-2}*")")),) +
+  labs(y = bquote(bold("Symbiont CN")), x = bquote(bold("Light (μmol quanta m⁻² s⁻¹)"))) +  
   theme_minimal() + 
   theme(text = element_text(size=20),  
         legend.position="none", 
