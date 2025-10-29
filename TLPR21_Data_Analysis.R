@@ -995,14 +995,33 @@ biplots <- ggplot(full, aes(x=delt_c, y=delt_n, color=species)) +
         strip.background = element_blank(), strip.text.x = element_blank()) 
 biplots
 
-ggsave("TLPR21_Fig5_Biplots.jpg", plot = biplots, path = 'GRAPHS/', width = 15, height =10)
+# Then add to your plot:
+biplots <- ggplot(full, aes(x=delt_c, y=delt_n, color=species)) +
+  facet_wrap(~species, scales = "free") +
+  geom_point(aes(shape = fraction), size = 4) + 
+  stat_ellipse(aes(linetype = fraction), type = "norm", size = 1.5, level=0.4) +
+  geom_polygon(data = hull, alpha = 0.2, aes(group = interaction(species, fraction)), 
+               linetype= "dashed", color="black", size=0.5, fill = NA) +  
+  theme_bw() + 
+  scale_color_manual(values = custom_palette) + 
+  scale_shape_manual(values = c(16,1)) +
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  labs(x=bquote(bold(~ δ^13 ~ "C (‰)")), y = bquote(bold(~ δ^15 ~ "N (‰)")), 
+       color="Species", shape = "Fraction", linetype="Fraction") +
+  theme(text = element_text(size=20), 
+        legend.key.size = unit(1, "cm"),
+        strip.background = element_blank(), strip.text.x = element_blank())
 
-# graph C & N by species 
-ggplot(full, aes(x=delt_c, y=delt_n, color=species)) +
-  geom_point() +
-  facet_wrap(~ fraction, ncol=2) +
-  stat_ellipse(type = "norm", size = 1, level=0.4) +
-  scale_color_manual(values = custom_palette) 
+biplots_annotated <- ggdraw(biplots) +
+  draw_label("*", x = 0.3, y = .95, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.6, y = .95, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.89, y = .95, fontface = "bold", size = 50) +
+  draw_label("*", x = 0.3, y = .48, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.6, y = .48, fontface = "bold", size = 50) 
+
+biplots
+
+ggsave("TLPR21_Fig5_Biplots.jpg", plot = biplots_annotated, path = 'GRAPHS/', width = 15, height =10)
 
 # Fig 6 HERS NO DEPTH --------------------------------------------------------------
 
@@ -1680,7 +1699,7 @@ biplots_MCAV <- ggplot(data_MCAV, aes(x=delt_c, y=delt_n, color=factor(species,m
   labs(x=bquote(bold(~ δ^13 ~ "C (‰)")), y = bquote(bold(~ δ^15 ~ "N (‰)")), title= "MCAV") +
   scale_y_continuous(labels = scales::number_format(accuracy = 1)) + 
   scale_x_continuous(labels = scales::number_format(accuracy = 1)) + 
-  theme(text = element_text(size=20), 
+  theme(text = element_text(size=30), 
         legend.position = "none", #legend.key.size = unit(1, "cm"),
         title = element_text(face="bold"), plot.title= element_text(hjust = 0.5), 
         axis.title.x = element_text(color="white"),
@@ -1700,7 +1719,7 @@ biplots_AAGA <- ggplot(data_AAGA, aes(x=delt_c, y=delt_n, color=factor(species,m
   labs(x=bquote(bold(~ δ^13 ~ "C (‰)")), y = bquote(bold(~ δ^15 ~ "N (‰)")), title = "AAGA") +
   scale_y_continuous(labels = scales::number_format(accuracy = 1)) + 
   scale_x_continuous(labels = scales::number_format(accuracy = 1)) + 
-  theme(text = element_text(size=20), 
+  theme(text = element_text(size=30), 
         legend.position = "none", #legend.key.size = unit(1, "cm"),
         title = element_text(face="bold"), plot.title= element_text(hjust = 0.5), 
         axis.title.y = element_blank(),
@@ -1719,7 +1738,7 @@ biplots_OFAV <- ggplot(data_OFAV, aes(x=delt_c, y=delt_n, color=factor(species,m
   labs(x=bquote(bold(~ δ^13 ~ "C (‰)")), y = bquote(bold(~ δ^15 ~ "N (‰)")), title = "OFAV") +
   scale_y_continuous(labels = scales::number_format(accuracy = 1)) + 
   scale_x_continuous(labels = scales::number_format(accuracy = 1)) + 
-  theme(text = element_text(size=20), 
+  theme(text = element_text(size=30), 
         legend.position = "none", #legend.key.size = unit(1, "cm"),
         title = element_text(face="bold"), plot.title= element_text(hjust = 0.5), 
         axis.title.y = element_blank(),
@@ -1739,7 +1758,7 @@ biplots_OFRA <- ggplot(data_OFRA, aes(x=delt_c, y=delt_n, color=factor(species,m
   labs(x=bquote(bold(~ δ^13 ~ "C (‰)")), y = bquote(bold(~ δ^15 ~ "N (‰)")), title = "OFRA") +
   scale_y_continuous(labels = scales::number_format(accuracy = 1)) + 
   scale_x_continuous(labels = scales::number_format(accuracy = 1)) + 
-  theme(text = element_text(size=20), 
+  theme(text = element_text(size=30), 
         legend.position = "none", #legend.key.size = unit(1, "cm"),
         title = element_text(face="bold"), plot.title= element_text(hjust = 0.5), 
         axis.title.y = element_blank(), axis.title.x = element_text(color="white"),
@@ -1758,7 +1777,7 @@ biplots_PAST <- ggplot(data_PAST, aes(x=delt_c, y=delt_n, color=factor(species,m
   labs(x=bquote(bold(~ δ^13 ~ "C (‰)")), y = bquote(bold(~ δ^15 ~ "N (‰)")), title = "PAST") +
   scale_y_continuous(labels = scales::number_format(accuracy = 1)) + 
   scale_x_continuous(labels = scales::number_format(accuracy = 1)) + 
-  theme(text = element_text(size=20), 
+  theme(text = element_text(size=30), 
         legend.position = "none", #legend.key.size = unit(1, "cm"),
         title = element_text(face="bold"), plot.title= element_text(hjust = 0.5), 
         axis.title.y = element_blank(),axis.title.x = element_text(color="white"),
@@ -1777,7 +1796,7 @@ biplots_PPOR <- ggplot(data_PPOR, aes(x=delt_c, y=delt_n, color=factor(species,m
   labs(x=bquote(bold(~ δ^13 ~ "C (‰)")), y = bquote(bold(~ δ^15 ~ "N (‰)")), title = "PPOR") +
   scale_y_continuous(labels = scales::number_format(accuracy = 1)) + 
   scale_x_continuous(labels = scales::number_format(accuracy = 1)) + 
-  theme(text = element_text(size=20), 
+  theme(text = element_text(size=30), 
         legend.position = "none", #legend.key.size = unit(1, "cm"),
         title = element_text(face="bold"), plot.title= element_text(hjust = 0.5), 
         axis.title.y = element_blank(),axis.title.x = element_text(color="white"),
@@ -1786,14 +1805,38 @@ biplots_PPOR <- ggplot(data_PPOR, aes(x=delt_c, y=delt_n, color=factor(species,m
 legend_stack <- plot_grid(blank, blank6_fracs,
                           ncol=1, rel_heights = c(.75,.25))
 
-biplots_depth <- plot_grid(biplots_MCAV,  biplots_OFAV, biplots_OFRA, biplots_AAGA, biplots_PAST, biplots_PPOR, legend_stack,
-                           ncol = 7, 
-                           rel_widths = c(.14, .14,.14,.14,.14,.19,.11)
+biplots_depth <- plot_grid(biplots_MCAV,  biplots_OFAV, biplots_OFRA, biplots_AAGA, biplots_PAST, biplots_PPOR, #legend_stack,
+                           ncol = 6, #7
+                           #rel_widths = c(.14, .14,.14,.14,.14,.19,.11)
+                           rel_widths = c(.16,.16,.16,.16,.16,.2)
                            #label_size = 25,labels = c("A", "B", "C", "D", "E"), label_x = 0.11, label_y = 0.99
 )
-biplots_depth 
 
-ggsave("TLPR21_FigS6_iso_depth.jpg", plot = biplots_depth , path = 'GRAPHS/', width = 22, height =18)
+
+biplots_depth_annotated <- ggdraw(biplots_depth ) +
+  draw_label("*", x = 0.145, y = .26, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.145, y = .48, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.3, y = .93, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.46, y = .705, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.46, y = .48, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.62, y = .93, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.62, y = .705, fontface = "bold", size = 50)
+
+biplots_depth_annotated
+
+ggsave("TLPR21_FigS6_iso_depth_TWO.jpg", plot = biplots_depth_annotated , path = 'GRAPHS/', width = 22, height =15)
+
+
+### COMBINE THE TWO GRAPHS!
+biplots_both <- plot_grid(biplots_annotated,biplots_depth_annotated, 
+                           ncol = 1, #7
+                           label_size = 25,labels = c("A", "B"), label_x = 0.11, label_y = 0.99
+)
+
+biplots_both
+
+ggsave("TLPR21_FigS6_iso_all.jpg", plot = biplots_both , path = 'GRAPHS/', width = 20, height =30)
+
 
 # DATA ANALYSIS - PERMANOVA ----------------------------------------------------------
 
@@ -1838,6 +1881,115 @@ PERMANOVA_results <- do.call(rbind, PERM_list)
 
 # save dataframe 
 write.csv(PERMANOVA_results, "STATS/TLPR21_Table1_PERMANOVA.csv", row.names = FALSE)
+
+##### PERMANOVA by depth 
+
+data_MCAV <- data_MCAV %>% mutate(speciesxdepth = paste0(species,"_",depth))
+data_MCAV_4 <- data_MCAV %>% filter(speciesxdepth == "MCAV_4.57")
+data_MCAV_9 <- data_MCAV %>% filter(speciesxdepth == "MCAV_9.14")
+data_MCAV_13 <- data_MCAV %>% filter(speciesxdepth == "MCAV_13.72")
+data_MCAV_16 <- data_MCAV %>% filter(speciesxdepth == "MCAV_16.76")
+
+data_OFAV <- data_OFAV %>% mutate(speciesxdepth = paste0(species,"_",depth))
+data_OFAV_4 <- data_OFAV %>% filter(speciesxdepth == "OFAV_4.57")
+data_OFAV_9 <- data_OFAV %>% filter(speciesxdepth == "OFAV_9.14")
+data_OFAV_13 <- data_OFAV %>% filter(speciesxdepth == "OFAV_13.72")
+data_OFAV_16 <- data_OFAV %>% filter(speciesxdepth == "OFAV_16.76")
+
+data_OFRA <- data_OFRA %>% mutate(speciesxdepth = paste0(species,"_",depth))
+data_OFRA_4 <- data_OFRA %>% filter(speciesxdepth == "OFRA_4.57")
+data_OFRA_9 <- data_OFRA %>% filter(speciesxdepth == "OFRA_9.14")
+data_OFRA_13 <- data_OFRA %>% filter(speciesxdepth == "OFRA_13.72")
+data_OFRA_16 <- data_OFRA %>% filter(speciesxdepth == "OFRA_16.76")
+
+data_AAGA <- data_AAGA %>% mutate(speciesxdepth = paste0(species,"_",depth))
+data_AAGA_4 <- data_AAGA %>% filter(speciesxdepth == "AAGA_4.57")
+data_AAGA_9 <- data_AAGA %>% filter(speciesxdepth == "AAGA_9.14")
+data_AAGA_13 <- data_AAGA %>% filter(speciesxdepth == "AAGA_13.72")
+data_AAGA_16 <- data_AAGA %>% filter(speciesxdepth == "AAGA_16.76")
+
+data_PAST <- data_PAST %>% mutate(speciesxdepth = paste0(species,"_",depth))
+data_PAST_4 <- data_PAST %>% filter(speciesxdepth == "PAST_4.57")
+data_PAST_9 <- data_PAST %>% filter(speciesxdepth == "PAST_9.14")
+data_PAST_13 <- data_PAST %>% filter(speciesxdepth == "PAST_13.72")
+data_PAST_16 <- data_PAST %>% filter(speciesxdepth == "PAST_16.76")
+
+data_PPOR <- data_PPOR %>% mutate(speciesxdepth = paste0(species,"_",depth))
+data_PPOR_4 <- data_PPOR %>% filter(speciesxdepth == "PPOR_4.57")
+data_PPOR_9 <- data_PPOR %>% filter(speciesxdepth == "PPOR_9.14")
+data_PPOR_13 <- data_PPOR %>% filter(speciesxdepth == "PPOR_13.72")
+data_PPOR_16 <- data_PPOR %>% filter(speciesxdepth == "PPOR_16.76")
+
+# Use it 
+PERM_MCAV_4 <- perform_adonis(data_MCAV_4, species_name = "MCAV_4.57")
+PERM_MCAV_9 <- perform_adonis(data_MCAV_9, species_name = "MCAV_9.14")
+PERM_MCAV_13 <- perform_adonis(data_MCAV_13, species_name = "MCAV_13.72")
+PERM_MCAV_16 <- perform_adonis(data_MCAV_16, species_name = "MCAV_16.76")
+
+PERM_OFAV_4 <- perform_adonis(data_OFAV_4, species_name = "OFAV_4.57")
+PERM_OFAV_9 <- perform_adonis(data_OFAV_9, species_name = "OFAV_9.14")
+PERM_OFAV_13 <- perform_adonis(data_OFAV_13, species_name = "OFAV_13.72")
+PERM_OFAV_16 <- perform_adonis(data_OFAV_16, species_name = "OFAV_16.76")
+
+PERM_OFRA_4 <- perform_adonis(data_OFRA_4, species_name = "OFRA_4.57")
+PERM_OFRA_9 <- perform_adonis(data_OFRA_9, species_name = "OFRA_9.14")
+PERM_OFRA_13 <- perform_adonis(data_OFRA_13, species_name = "OFRA_13.72")
+PERM_OFRA_16 <- perform_adonis(data_OFRA_16, species_name = "OFRA_16.76")
+
+PERM_AAGA_4 <- perform_adonis(data_AAGA_4, species_name = "AAGA_4.57")
+PERM_AAGA_9 <- perform_adonis(data_AAGA_9, species_name = "AAGA_9.14")
+PERM_AAGA_13 <- perform_adonis(data_AAGA_13, species_name = "AAGA_13.72")
+PERM_AAGA_16 <- perform_adonis(data_AAGA_16, species_name = "AAGA_16.76")
+
+PERM_PAST_4 <- perform_adonis(data_PAST_4, species_name = "PAST_4.57")
+PERM_PAST_9 <- perform_adonis(data_PAST_9, species_name = "PAST_9.14")
+PERM_PAST_13 <- perform_adonis(data_PAST_13, species_name = "PAST_13.72")
+PERM_PAST_16 <- perform_adonis(data_PAST_16, species_name = "PAST_16.76")
+
+PERM_PPOR_4 <- perform_adonis(data_PPOR_4, species_name = "PPOR_4.57")
+PERM_PPOR_9 <- perform_adonis(data_PPOR_9, species_name = "PPOR_9.14")
+PERM_PPOR_13 <- perform_adonis(data_PPOR_13, species_name = "PPOR_13.72")
+PERM_PPOR_16 <- perform_adonis(data_PPOR_16, species_name = "PPOR_16.76")
+
+# Create a list of data frames
+PERM_list <- list(
+  PERM_MCAV_4,
+  PERM_MCAV_9,
+  PERM_MCAV_13,
+  PERM_MCAV_16,
+  
+  PERM_OFAV_4,
+  PERM_OFAV_9,
+  PERM_OFAV_13,
+  PERM_OFAV_16,
+  
+  PERM_OFRA_4,
+  PERM_OFRA_9,
+  PERM_OFRA_13,
+  PERM_OFRA_16,
+  
+  PERM_AAGA_4,
+  PERM_AAGA_9,
+  PERM_AAGA_13,
+  PERM_AAGA_16,
+  
+  PERM_PAST_4,
+  PERM_PAST_9,
+  PERM_PAST_13,
+  PERM_PAST_16,
+  
+  PERM_PPOR_4,
+  PERM_PPOR_9,
+  PERM_PPOR_13,
+  PERM_PPOR_16
+)
+
+# Combine all data frames into one
+PERMANOVA_results <- do.call(rbind, PERM_list)
+
+# save dataframe 
+write.csv(PERMANOVA_results, "STATS/TLPR21_Table1_PERMANOVA_depth.csv", row.names = FALSE)
+
 
 # Fig 7 Do CD or CO change with depth? ---------------------------------------------------------------------
 
