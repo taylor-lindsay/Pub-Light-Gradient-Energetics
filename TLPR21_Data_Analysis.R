@@ -653,6 +653,8 @@ results_list <- list()
 raw2.2 <- raw2 %>%
   select(-c(depth, act_depth, site, sample_id)) #, species_cat 
 
+I0 * exp(-Kd*16.76)
+
 # Loop through each species
 for (sp in unique(raw2.2$species)) {
   
@@ -1826,7 +1828,6 @@ biplots_depth_annotated
 
 ggsave("TLPR21_FigS6_iso_depth_TWO.jpg", plot = biplots_depth_annotated , path = 'GRAPHS/', width = 22, height =15)
 
-
 ### COMBINE THE TWO GRAPHS!
 biplots_both <- plot_grid(biplots_annotated,biplots_depth_annotated, 
                            ncol = 1, #7
@@ -2517,4 +2518,75 @@ light_arrange_phys
 ggsave("TLPR21_FigS2_phys.jpg", plot = light_arrange_phys, path = 'GRAPHS/', width = 20, height = 22)
 
 
+
+# Reviewer suggestion  ----------------------------------------------------
+
+raw2_pp <- raw2 %>% #filter(species == "PPOR") %>%
+  mutate(chl.prot = chla.ug.cm2/prot_mg.cm2) %>%
+  mutate(chl.D = chla.ug.cm2/D) %>%
+  mutate(chl.sym = chla.ug.cm2/sym.cm2)
+
+# chl is significantly higher in high light 
+ggplot(raw2_pp, aes(y = chla.ug.cm2, x = act_light)) +
+  geom_smooth(color="black", alpha = 0.7, method="lm") +
+  geom_point(color="black", shape= 1, size = 1) +
+  facet_wrap(~species, scales = "free", ncol= 6) + 
+  stat_cor(aes(label = paste(after_stat(rr.label), after_stat(p.label), 
+                             sep = "~`,`~")))
+
+# calice density is significantly higher in high light 
+ggplot(raw2_pp, aes(y = D, x = act_light)) +
+  geom_smooth(color="black", alpha = 0.7, method="lm") +
+  geom_point(color="black", shape= 1, size = 1) +
+  facet_wrap(~species, scales = "free", ncol= 6) + 
+  stat_cor(aes(label = paste(after_stat(rr.label), after_stat(p.label), 
+                             sep = "~`,`~")))
+
+# protein is significantly higher in high light 
+ggplot(raw2_pp, aes(y = prot_mg.cm2, x = act_light)) +
+  geom_smooth(color="black", alpha = 0.7, method="lm") +
+  geom_point(color="black", shape= 1, size = 1) +
+  facet_wrap(~species, scales = "free", ncol= 6) + 
+  stat_cor(aes(label = paste(after_stat(rr.label), after_stat(p.label), 
+                             sep = "~`,`~")))
+
+# host AFDW is significantly higher in high light 
+ggplot(raw2_pp, aes(y = Host_AFDW_mg.cm2, x = act_light)) +
+  geom_smooth(color="black", alpha = 0.7, method="lm") +
+  geom_point(color="black", shape= 1, size = 1) +
+  facet_wrap(~species, scales = "free", ncol= 6) + 
+  stat_cor(aes(label = paste(after_stat(rr.label), after_stat(p.label), 
+                             sep = "~`,`~")))
+
+# symbionts are not significantly different 
+ggplot(raw2_pp, aes(y = sym.cm2, x = act_light)) +
+  geom_smooth(color="black", alpha = 0.7, method="lm") +
+  geom_point(color="black", shape= 1, size = 1) +
+  facet_wrap(~species, scales = "free", ncol= 6) + 
+  stat_cor(aes(label = paste(after_stat(rr.label), after_stat(p.label), 
+                             sep = "~`,`~")))
+
+# chl/prot is not significantly different 
+ggplot(raw2_pp, aes(y = chl.prot, x = act_light)) +
+  geom_smooth(color="black", alpha = 0.7, method="lm") +
+  geom_point(color="black", shape= 1, size = 1) +
+  facet_wrap(~species, scales = "free", ncol= 6) + 
+  stat_cor(aes(label = paste(after_stat(rr.label), after_stat(p.label), 
+                             sep = "~`,`~")))
+
+# chl/sym is not significantly different 
+ggplot(raw2_pp, aes(y = chl.sym, x = act_light)) +
+  geom_smooth(color="black", alpha = 0.7, method="lm") +
+  geom_point(color="black", shape= 1, size = 1) +
+  facet_wrap(~species, scales = "free", ncol= 6) + 
+  stat_cor(aes(label = paste(after_stat(rr.label), after_stat(p.label), 
+                             sep = "~`,`~")))
+
+# chl/D is not significantly different 
+ggplot(raw2_pp, aes(y = chl.D, x = act_light)) +
+  geom_smooth(color="black", alpha = 0.7, method="lm") +
+  geom_point(color="black", shape= 1, size = 1) +
+  facet_wrap(~species, scales = "free", ncol= 6) + 
+  stat_cor(aes(label = paste(after_stat(rr.label), after_stat(p.label), 
+                             sep = "~`,`~")))
 
