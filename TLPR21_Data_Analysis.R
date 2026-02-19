@@ -1524,7 +1524,7 @@ metric_overlap <- ggplot(just_means_morph_long, aes(x = overlap, y = value)) +
   facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
              scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
   geom_smooth(method = "lm", formula = formula, color="black") +
-  geom_point(aes(color = species, shape = depth), size = 3) +
+  geom_point(aes(color = species), size = 3) + #, shape = depth
   scale_color_manual(values = custom_palette) +
   # stat_fit_glance( method = "lm", method.args = list(formula = formula), geom = "text",
   #   aes(label = paste(
@@ -1544,7 +1544,7 @@ metric_cent <- ggplot(just_means_morph_long, aes(x = centroid_distance, y = valu
   facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
              scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
   geom_smooth(method = "lm", formula = formula, color="black") +
-  geom_point(aes(color = species, shape = depth), size = 3) +
+  geom_point(aes(color = species), size = 3) + #, shape = depth
   scale_color_manual(values = custom_palette) +
   # stat_fit_glance( method = "lm", method.args = list(formula = formula), geom = "text",
   #   aes(label = paste(
@@ -1574,7 +1574,7 @@ metric_overlap_cal <- ggplot(just_means_morph_long_cal, aes(x = overlap, y = val
   facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
              scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
   geom_smooth(method = "lm", formula = formula, color="black") +
-  geom_point(aes(color = species, shape = depth), size = 3) +
+  geom_point(aes(color = species), size = 3) + #, shape = depth
   scale_color_manual(values = custom_palette) +
   stat_fit_glance(
     method = "lm",
@@ -1602,7 +1602,7 @@ metric_cent_cal <- ggplot(just_means_morph_long_cal, aes(x = centroid_distance, 
   facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
              scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
   geom_smooth(method = "lm", formula = formula, color="black") +
-  geom_point(aes(color = species, shape = depth), size = 3) +
+  geom_point(aes(color = species), size = 3) + #, shape = depth
   scale_color_manual(values = custom_palette) +
   stat_fit_glance(
     method = "lm",
@@ -1681,6 +1681,149 @@ metric_SIBER_CA
 
 ggsave("TLPR21_FigX_cor_area_SIBER.jpg", plot = metric_SIBER_CA, path = 'GRAPHS/', width = 5, height =10)
 
+
+
+
+# Fig 8 NEW  --------------------------------------
+
+just_means_morph_long <- just_means_species_depth_long %>%
+  filter(metric == 'mean_D' | metric == 'mean_cor_di' | metric == 'mean_cor_a'| metric == 'mean_cal_di'| metric == 'mean_cal_a')
+
+#just_means_morph_long <- just_means_morph_long  %>% filter(species != 'MCAV') 
+
+neworder <- c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cor_a")
+just_means_morph_long$species <- factor(just_means_morph_long$species, levels = c("MCAV", "OFAV", "OFRA","AAGA",  "PAST", "PPOR"))
+just_means_morph_long$depth <- factor(just_means_morph_long$depth, levels = c("4.57","9.14",  "13.72", "16.76"))
+just_means_mortph_long_Cor_A <- just_means_morph_long %>% filter(metric == "mean_cor_a")
+formula <- y ~ x
+all_long <- just_means_morph_long %>% pivot_longer(cols = c(overlap, centroid_distance), names_to = "Variable", values_to = "Correlation")
+
+my_labeller2 <- as_labeller(c(
+  mean_chl =  "Chlorophyll a\n(μg/cm²)", 
+  mean_sym =  "Symbiont density\n(cells/cm²)", 
+  mean_sym_AFDW =  "Symbiont Biomass\n(mg/cm²)", 
+  mean_host_AFDW =  "Host Biomass\n(mg/cm²)", 
+  mean_prot =  "Host Protein\n(mg/cm²)",  
+  mean_cal_a =  "Calice Area\n(cm²)", 
+  mean_cal_di =  "Calice Diameter\n(cm)", 
+  mean_cor_a =  "Corallite Area\n(cm²)", 
+  mean_cor_di =  "Corallite Diameter\n(cm)", 
+  mean_D =  "Corallite Density\n(per cm²)",
+  overlap =  "Ellipse Overlap\n(%)", 
+  centroid_distance =  "Centroid Distance\n(‰)"),
+  default = label_value  # This will preserve the line breaks
+)
+
+metric_SIBER <- ggplot(all_long, aes(x = Correlation, y = value)) + 
+  facet_grid(vars(factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a"))), vars(Variable), 
+             scales="free",  labeller = my_labeller2, switch = "both") +
+  geom_point(aes(color = species), size = 2) +
+  geom_smooth(method = "lm", formula = formula, color="black", size = 2, alpha = 0.2) +
+  theme_bw() +
+  theme(text = element_text(size = 16), 
+        strip.placement = "outside", 
+        strip.background = element_blank(), 
+        strip.text.x = element_text(face="bold", size = 15),  
+        strip.text.y = element_text(face="bold", size = 16),
+        #legend.position=c(0.88,0.795), 
+        #legend.box.background = element_rect(color="black", size=1.5)
+        ) + 
+  labs(x = "", y = "", color = "Species") +
+  scale_color_manual(values = custom_palette) 
+
+metric_SIBER_annotated <- ggdraw(metric_SIBER) +
+  draw_label("*", x = 0.24, y = .818, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.55, y = .818, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.24, y = .633, fontface = "bold", size = 50) +
+  draw_label("*", x = 0.55, y = .633, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.24, y = .445, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.55, y = .445, fontface = "bold", size = 50) 
+
+metric_SIBER_annotated
+
+ggsave("TLPR21_Fig8_metric_cent_overlap.jpg", plot = metric_SIBER_annotated, path = 'GRAPHS/', width = 6, height =16)
+
+
+# Fig 8 #2 ----------------------------------------------------------------
+
+my_labeller_justD <- as_labeller(c(
+  mean_D =  "Corallite Density (per cm²)",
+  overlap =  "Ellipse Overlap (%)", 
+  centroid_distance =  "Centroid Distance (‰)"),
+  default = label_value  # This will preserve the line breaks
+)
+
+D_long <- all_long %>% filter(metric == "mean_D")
+
+metric_SIBER_justD <- ggplot(D_long, aes(x = Correlation, y = value)) + 
+  facet_grid(vars(factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a"))), vars(Variable), 
+             scales="free",  labeller = my_labeller_justD , switch = "both") +
+  geom_point(aes(color = species), size = 2) +
+  geom_smooth(method = "lm", formula = formula, color="black", size = 2, alpha = 0.2) +
+  theme_bw() +
+  theme(text = element_text(size = 16), 
+        strip.placement = "outside", 
+        strip.background = element_blank(), 
+        strip.text.x = element_text(face="bold", size = 15),  
+        strip.text.y = element_text(face="bold", size = 16),
+        legend.position=c(0.9,0.12), 
+        legend.box.background = element_rect(color="black", size=1.5)
+  ) + 
+  labs(x = NULL, y = NULL, color = "Species") +
+  scale_color_manual(values = custom_palette) 
+
+metric_SIBER_justD_annotated <- ggdraw(metric_SIBER_justD ) +
+  draw_label("*", x = 0.35, y = .95, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.78, y = .95, fontface = "bold", size = 50) 
+
+metric_SIBER_justD_annotated 
+
+## 
+
+my_labeller_notD <- as_labeller(c(
+  mean_cal_a =  "Calice Area", 
+  mean_cal_di =  "Calice Diameter", 
+  mean_cor_a =  "Corallite Area", 
+  mean_cor_di =  "Corallite Diameter", 
+  mean_D =  "Corallite Density",
+  overlap =  "Ellipse \nOverlap", 
+  centroid_distance =  "Centroid \nDistance"),
+  default = label_value  # This will preserve the line breaks
+)
+
+not_D <- all_long %>% filter(metric != "mean_D")
+
+metric_SIBER_notD <- ggplot(not_D, aes(x = Correlation, y = value)) + 
+  facet_grid(vars(factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a"))), vars(Variable), 
+             scales="free",  labeller = my_labeller_notD, switch = "both") +
+  geom_point(size = 0.5) +
+  geom_smooth(method = "lm", formula = formula, color="black", size = 2, alpha = 0.2) +
+  theme_classic() +
+  theme(text = element_text(size = 12), 
+        strip.placement = "outside", 
+        strip.background = element_blank(), 
+        strip.text.x = element_text(face="bold", size = 12),  
+        strip.text.y = element_text(face="bold", size = 12),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank()
+        #legend.position=c(0.88,0.795), 
+        #legend.box.background = element_rect(color="black", size=1.5)
+  ) + 
+  labs(x = NULL, y = NULL) 
+
+metric_SIBER_notD_annotated <- ggdraw(metric_SIBER_notD) +
+  draw_label("*", x = 0.21, y = .97, fontface = "bold", size = 40) + 
+  draw_label("*", x = 0.21, y = .735, fontface = "bold", size = 40) + 
+  draw_label("*", x = 0.88, y = .97, fontface = "bold", size = 40) + 
+  draw_label("*", x = 0.88, y = .735, fontface = "bold", size = 40) 
+
+metric_SIBER_annotated
+
+metric_SIBER_simple <- plot_grid( metric_SIBER_justD_annotated , metric_SIBER_notD_annotated , labels = c("A", "B"), ncol = 2, rel_widths = c(1, 0.4), align = "v")
+
+ggsave("TLPR21_Fig82_metric_cent_overlap.jpg", plot = metric_SIBER_simple, path = 'GRAPHS/', width = 10, height =10)
 
 
 
