@@ -5,6 +5,22 @@
 # March 2025
 # Updated Oct 2025 after first review 
 
+Fig 1 - enviro
+Fig 2 - heat map
+fig 3 - 6 SIBER 
+fig 4 - HERS
+fig 5 - Morph x siber metrics 
+
+Fig s1 - map
+Fig s2 - species 
+Fig s3 - calice 
+fig s4 - morph scatter
+fig s5 - phys scatter 
+fig s6 - all box
+fig s7 - iso scatter
+fig s8 - isotope biplots 
+fig s9 - raw EO HERS scores 
+
 # Set up ------------------------------------------------------------------
 
 # Environment 
