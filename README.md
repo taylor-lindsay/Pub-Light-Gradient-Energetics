@@ -1,6 +1,6 @@
 # Pub-Light-Gradient-Energetics
 
-# TITLE 
+### TITLE ###
 Morphological and trophic coupling distinguishes coral clades along a light gradient
 
 # DOI
