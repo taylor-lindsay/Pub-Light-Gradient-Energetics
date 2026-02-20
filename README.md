@@ -15,4 +15,11 @@ Light availability is critical to the growth and survival of most scleractinian 
 
 ### DATA & CODE INFORMATION ###
 
+*Files*
+Data_Analysis.R - All data analysis and visualization code for the manuscript 
+Data_Analysis_HERS.R - an independent script for calculating HERS scores 
 
+*Folders*
+DATA - All raw data 
+GRAPHS - Figures created from raw data 
+STATS - Statistical outputs 
