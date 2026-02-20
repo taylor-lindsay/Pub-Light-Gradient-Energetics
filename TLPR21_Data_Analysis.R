@@ -1,25 +1,6 @@
-
-# Data Analysis for T. Lindsay Dissertation 
-# Chapter 1 
 # LIGHT MODULATES MORPHOLOGY MORE THAN TROPHIC AND PHYSIOLOGICAL DYNAMICS OF SIX CARIBBEAN CORALS  
-# March 2025
-# Updated Oct 2025 after first review 
-
-Fig 1 - enviro
-Fig 2 - heat map
-fig 3 - 6 SIBER 
-fig 4 - HERS
-fig 5 - Morph x siber metrics 
-
-Fig s1 - map
-Fig s2 - species 
-Fig s3 - calice 
-fig s4 - morph scatter
-fig s5 - phys scatter 
-fig s6 - all box
-fig s7 - iso scatter
-fig s8 - isotope biplots 
-fig s9 - raw EO HERS scores 
+# Taylor Lindsay
+# Updated Feb '26 after first review 
 
 # Set up ------------------------------------------------------------------
 
@@ -243,7 +224,7 @@ bartlett.test(delt_n_S~species, data=raw2) # 0.84
 # ALL variables are not normal except for the DeltN of the symbionts
 # about half my data is heteroskedastic for depth, and almost all is heteroskedastic for species 
 
-# Fig 1 MAP ---------------------------------------------------------------------
+# Fig S1 MAP ---------------------------------------------------------------------
 
 # Upload MPA shapefile 
 polygons <- st_read('MAP/PADUS1_4MPA.shp')
@@ -320,7 +301,7 @@ print(inset_plot + theme_void(), vp = viewport(x = 0.84, y = 0.8, width = 0.25, 
 # Close the graphics device
 dev.off()
 
-# Fig 3 Enviro + Kd ------------------------------------------------------------
+# Fig 1 Enviro + Kd ------------------------------------------------------------
 
 # Read in data 
 enviro_merged <- read.csv('DATA/TLPR21_Enviro.csv')
@@ -563,8 +544,7 @@ enviro_arrange_all <- plot_grid(kd_plot, enviro_arrange2,
                              ncol = 2,
                              labels = c("a", ""),  label_size = 35, label_x = 0.1, label_y = 0.99)
 
-ggsave("TLPR21_Fig3_Enviro2.jpg", plot = enviro_arrange_all, path = 'GRAPHS/', width = 25, height = 16)
-
+ggsave("Fig1_Enviro.jpg", plot = enviro_arrange_all, path = 'GRAPHS/', width = 25, height = 16)
 
 # DATA PREP - Phys & morph   -----------------------------------------------------------
 
@@ -985,7 +965,7 @@ just_means <- all_means %>% select(!c(sd_host_AFDW,sd_sym_AFDW, sd_sym, sd_chl, 
 
 write.csv(all_means, "STATS/TLPR21_Table1_SIBER_and_means.csv", row.names = FALSE)
 
-# Fig 5 Isotope biplots ---------------------------------------------------
+# Fig 3 Isotope biplots ---------------------------------------------------
 
 # Biplots by species 
 
@@ -1039,9 +1019,9 @@ biplots_annotated <- ggdraw(biplots) +
 
 biplots
 
-ggsave("TLPR21_Fig5_Biplots.jpg", plot = biplots_annotated, path = 'GRAPHS/', width = 15, height =10)
+ggsave("Fig3_Biplots.jpg", plot = biplots_annotated, path = 'GRAPHS/', width = 15, height =10)
 
-# Fig 6 HERS NO DEPTH --------------------------------------------------------------
+# Fig 4 HERS NO DEPTH --------------------------------------------------------------
 
 # HERS
 # Coral Niche modeling
@@ -1270,9 +1250,9 @@ xdens
 overlap.plot<-insert_xaxis_grob(pmain,xdens,grid::unit(.5,"null"),position="top")
 ggdraw(overlap.plot)
 
-ggsave("TLPR21_Fig6_HERS.jpg", plot = overlap.plot, path = 'GRAPHS/', width = 6, height= 8)
+ggsave("Fig4_HERS.jpg", plot = overlap.plot, path = 'GRAPHS/', width = 6, height= 8)
 
-# Fig 6 HERS BY DEPTH --------------------------------------------------------------
+# DATA ANALYSIS - HERS BY DEPTH --------------------------------------------------------------
 
 # I re-ran the HERS protocol this time seperated by depth category as well as species 
 HERS_DEPTH <- read.csv('DATA/TLPR21_HERS_10000_depth.csv') # 500
@@ -1303,10 +1283,6 @@ mean_HERS <- HERS_DEPTH_clean %>%
   mutate(light = I0 * exp(-Kd * depth))
 
 mean_HERS$species <- factor(mean_HERS$species, levels = c("MCAV",  "OFAV", "OFRA", "AAGA", "PAST", "PPOR"))
-
-# I plotted the figure in a different section 
-
-# HERS BY DEPTH  - not using for now --------------------------------------
 
 ### GRAPH percentiles & peaks 
 boots.ci_depth <-HERS_DEPTH_clean %>%
@@ -1350,8 +1326,6 @@ xdens<- axis_canvas(pmain,axis="x") +
   geom_density(data=HERS_AAGA, mapping=aes(x=HERS, fill=Species), alpha=0.5,size=.2)#+
   #scale_fill_manual(values=c("#74c476","#004418","#ee2363", "#00a8e8","#2832c2", "#fec506"))
 xdens
-
-
 
 #combine the plots 
 overlap.plot<-insert_xaxis_grob(pmain,xdens,grid::unit(.5,"null"),position="top")
@@ -1509,7 +1483,7 @@ just_means_species_depth_long <- just_means_species_depth %>% pivot_longer(cols 
 #write.csv(just_means_species_depth_long, "STATS/TLPR21_SIBER_BY_DEPTH.csv", row.names = FALSE)
 just_means_species_depth_long <- read.csv('STATS/TLPR21_SIBER_BY_DEPTH.csv')
   
-# Fig 8 Ellipse overlap vs. metrics  --------------------------------------
+# Fig 5 - Ellipse overlap vs. metrics #A --------------------------------------
 
 just_means_morph_long <- just_means_species_depth_long %>%
   filter(metric == 'mean_D' | metric == 'mean_cor_di' | metric == 'mean_cor_a'| metric == 'mean_cal_di'| metric == 'mean_cal_a')
@@ -1656,7 +1630,7 @@ metric_SIBER_annotated <- ggdraw(metric_SIBER) +
 
 metric_SIBER_annotated
 
-ggsave("TLPR21_Fig8_metric_cent_overlap.jpg", plot = metric_SIBER_annotated, path = 'GRAPHS/', width = 18, height =10)
+ggsave("Fig5a_metric_cent_overlap.jpg", plot = metric_SIBER_annotated, path = 'GRAPHS/', width = 18, height =10)
 
 
 ### simplified version for my defense 
@@ -1695,12 +1669,12 @@ CA_centroid
 metric_SIBER_CA <- plot_grid( CA_centroid, CA_overlap, ncol = 1, align = "v")
 metric_SIBER_CA
 
-ggsave("TLPR21_FigX_cor_area_SIBER.jpg", plot = metric_SIBER_CA, path = 'GRAPHS/', width = 5, height =10)
+#ggsave("TLPR21_FigX_cor_area_SIBER.jpg", plot = metric_SIBER_CA, path = 'GRAPHS/', width = 5, height =10)
 
 
 
 
-# Fig 8 NEW  --------------------------------------
+# Fig 5 - Ellipse overlap vs. metrics #B  --------------------------------------
 
 just_means_morph_long <- just_means_species_depth_long %>%
   filter(metric == 'mean_D' | metric == 'mean_cor_di' | metric == 'mean_cor_a'| metric == 'mean_cal_di'| metric == 'mean_cal_a')
@@ -1733,7 +1707,7 @@ my_labeller2 <- as_labeller(c(
 metric_SIBER <- ggplot(all_long, aes(x = Correlation, y = value)) + 
   facet_grid(vars(factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a"))), vars(Variable), 
              scales="free",  labeller = my_labeller2, switch = "both") +
-  geom_point(aes(color = species), size = 2) +
+  geom_point(aes(shape = depth, color = species), size = 2) +
   geom_smooth(method = "lm", formula = formula, color="black", size = 2, alpha = 0.2) +
   theme_bw() +
   theme(text = element_text(size = 16), 
@@ -1744,23 +1718,23 @@ metric_SIBER <- ggplot(all_long, aes(x = Correlation, y = value)) +
         #legend.position=c(0.88,0.795), 
         #legend.box.background = element_rect(color="black", size=1.5)
         ) + 
-  labs(x = "", y = "", color = "Species") +
+  labs(x = "", y = "", color = "Species", shape = "Depth") +
   scale_color_manual(values = custom_palette) 
 
 metric_SIBER_annotated <- ggdraw(metric_SIBER) +
-  draw_label("*", x = 0.24, y = .818, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.23, y = .818, fontface = "bold", size = 50) + 
   draw_label("*", x = 0.55, y = .818, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.24, y = .633, fontface = "bold", size = 50) +
+  draw_label("*", x = 0.23, y = .633, fontface = "bold", size = 50) +
   draw_label("*", x = 0.55, y = .633, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.24, y = .445, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.55, y = .445, fontface = "bold", size = 50) 
+  draw_label("*", x = 0.23, y = .448, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.55, y = .448, fontface = "bold", size = 50) 
 
 metric_SIBER_annotated
 
-ggsave("TLPR21_Fig8_metric_cent_overlap.jpg", plot = metric_SIBER_annotated, path = 'GRAPHS/', width = 6, height =16)
+ggsave("Fig5b_metric_cent_overlap.jpg", plot = metric_SIBER_annotated, path = 'GRAPHS/', width = 6.5, height =16)
 
 
-# Fig 8 #2 ----------------------------------------------------------------
+# Fig 5 - Ellipse overlap vs. metrics #C ----------------------------------------------------------------
 
 my_labeller_justD <- as_labeller(c(
   mean_D =  "Corallite Density (per cm²)",
@@ -1839,11 +1813,11 @@ metric_SIBER_annotated
 
 metric_SIBER_simple <- plot_grid( metric_SIBER_justD_annotated , metric_SIBER_notD_annotated , labels = c("A", "B"), ncol = 2, rel_widths = c(1, 0.4), align = "v")
 
-ggsave("TLPR21_Fig82_metric_cent_overlap.jpg", plot = metric_SIBER_simple, path = 'GRAPHS/', width = 10, height =10)
+ggsave("Fig5c_metric_cent_overlap.jpg", plot = metric_SIBER_simple, path = 'GRAPHS/', width = 10, height =10)
 
 
 
-# Fig S6 SIBER by Depth ---------------------------------------------------
+# Fig S8 SIBER by Depth ---------------------------------------------------
 
 ### PLOT ELLIPSES FOR ALL DEPTHS 
 
@@ -1985,18 +1959,7 @@ biplots_depth_annotated <- ggdraw(biplots_depth ) +
 
 biplots_depth_annotated
 
-ggsave("TLPR21_FigS6_iso_depth_TWO.jpg", plot = biplots_depth_annotated , path = 'GRAPHS/', width = 22, height =15)
-
-### COMBINE THE TWO GRAPHS!
-biplots_both <- plot_grid(biplots_annotated,biplots_depth_annotated, 
-                           ncol = 1, #7
-                           label_size = 25,labels = c("A", "B"), label_x = 0.11, label_y = 0.99
-)
-
-biplots_both
-
-ggsave("TLPR21_FigS6_iso_all.jpg", plot = biplots_both , path = 'GRAPHS/', width = 20, height =30)
-
+ggsave("FigS8_iso_depth_TWO.jpg", plot = biplots_depth_annotated , path = 'GRAPHS/', width = 22, height =15)
 
 # DATA ANALYSIS - PERMANOVA ----------------------------------------------------------
 
@@ -2151,7 +2114,7 @@ PERMANOVA_results <- do.call(rbind, PERM_list)
 write.csv(PERMANOVA_results, "STATS/TLPR21_Table1_PERMANOVA_depth.csv", row.names = FALSE)
 
 
-# Fig 7 Do CD or CO change with depth? ---------------------------------------------------------------------
+# Fig S9 Do CD or CO change with depth? ---------------------------------------------------------------------
 
 just_means_species_depth <- just_means_species_depth %>%
   mutate(light = I0 * exp(-Kd * depth))
@@ -2231,9 +2194,9 @@ plot_hers_depth <- ggplot(mean_HERS, aes(x = as.numeric(light), y = as.numeric(m
 depth_species <- plot_grid(depth_species_cent,depth_species_overlap, plot_hers_depth, 
                            ncol = 1, align = "v")
 
-ggsave("TLPR21_Fig7_iso_depth_species.jpg", plot = depth_species, path = 'GRAPHS/', width = 15, height =15)
+ggsave("FigS9_iso_depth_species.jpg", plot = depth_species, path = 'GRAPHS/', width = 15, height =15)
 
-# Fig 4 Correlation heatmap -----------------------------------------------------
+# Fig 2 Correlation heatmap -----------------------------------------------------
 
 # Define target variable to compare against (e.g., "act_light")
 target_var <- "act_light"
@@ -2361,9 +2324,9 @@ heatmap <- ggplot(merged_signif, aes(x = species, y = Variable, fill = value)) +
   scale_y_discrete(labels = new_variable_names)
 heatmap
 
-ggsave("TLPR21_Fig4_heatmap.jpg", plot = heatmap, path = 'GRAPHS/', width = 15, height =15)
+ggsave("Fig2_heatmap.jpg", plot = heatmap, path = 'GRAPHS/', width = 15, height =15)
 
-# Fig S4 medians  -------------------------------------------------------
+# Fig S6 medians  -------------------------------------------------------
 
 raw2_long <- raw2 %>%
   select(!c(depth, act_depth, site, sample_id, act_depth, act_light)) %>%
@@ -2408,9 +2371,9 @@ all_median <- ggplot(raw2_long, aes(x=species, y=value, fill=species)) +
   ) +
   labs(x = "Species", fill = "Species")
 
-ggsave("TLPR21_FigS4_medians.jpg", plot = all_median, path = 'GRAPHS/', width = 15, height = 15)
+ggsave("FigS6_medians.jpg", plot = all_median, path = 'GRAPHS/', width = 15, height = 15)
 
-# Fig X Depth & Light---------------------------------------------------
+# Figs S4, S5, S7 - raw data ---------------------------------------------------
 
 raw2$species <- factor(raw2$species, levels = c("MCAV", "OFAV", "OFRA", "AAGA", "PPOR", "PAST") )
 
@@ -2509,7 +2472,7 @@ light_SCN <- ggplot(raw2, aes(y = cn_ratio_S, x = act_light, fill = species)) +
 light_arrange_iso <- plot_grid(light_HC, light_SC, light_HN, light_SN, light_HCN, light_SCN, 
                                ncol = 1, align = "v")
 
-ggsave("TLPR21_FigS5_iso.jpg", plot = light_arrange_iso, path = 'GRAPHS/', width = 20, height = 20)
+ggsave("FigS7_iso.jpg", plot = light_arrange_iso, path = 'GRAPHS/', width = 20, height = 20)
 
 # MORPHOLOGY
 
@@ -2590,8 +2553,7 @@ light_cal_a <- ggplot(raw2, aes(y = cal_a, x = act_light, fill = species)) +
 light_arrange_morph <- plot_grid(light_D, light_cor_di, light_cor_a, light_cal_di, light_cal_a,
                                  ncol = 1, align = "v")
 
-ggsave("TLPR21_FigS3_morph.jpg", plot = light_arrange_morph, path = 'GRAPHS/', width = 20, height = 22)
-
+ggsave("FigS4_morph.jpg", plot = light_arrange_morph, path = 'GRAPHS/', width = 20, height = 22)
 
 # Physiology 
 
@@ -2674,9 +2636,7 @@ light_chl
 light_arrange_phys <- plot_grid(light_prot, light_AFDW_H, light_AFDW_S, light_sym, light_chl, 
                                 ncol = 1, align = "v")
 light_arrange_phys
-ggsave("TLPR21_FigS2_phys.jpg", plot = light_arrange_phys, path = 'GRAPHS/', width = 20, height = 22)
-
-
+ggsave("FigS5_phys.jpg", plot = light_arrange_phys, path = 'GRAPHS/', width = 20, height = 22)
 
 # Reviewer suggestion  ----------------------------------------------------
 
