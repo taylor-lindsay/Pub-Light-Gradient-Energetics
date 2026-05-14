@@ -21,7 +21,7 @@ Data_Analysis.R - All data analysis and visualization code for the manuscript
 
 Data_Analysis_HERS.R - an independent script for calculating HERS scores 
 
-*Folders*
+**Folders**
 
 DATA - All raw data 
 
