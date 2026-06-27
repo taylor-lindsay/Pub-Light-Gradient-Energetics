@@ -362,12 +362,12 @@ enviro_temp <- ggplot(daily_temp, aes(x=as.Date(date), y=mean_temp, color=depth)
   theme(
     legend.position=c(.2, .8), 
     legend.box.background = element_rect(color="black", size=1.5), 
-    text = element_text( size=35), 
+    text = element_text( size=25), 
     axis.text.x = element_blank(), 
     axis.ticks.x= element_blank()
   )+ 
   labs(y = "Mean Temperature (˚C)", x = "", fill = "Depth", color = "Depth") +
-  scale_x_date(limits = as.Date(c('2021-07-12','2021-09-01')))
+  scale_x_date(limits = as.Date(c('2021-07-15','2021-09-02')))
 enviro_temp
 
 # Light
@@ -381,12 +381,12 @@ enviro_light <- ggplot(daily_light, aes(x=as.Date(date), y=mean_light, color=dep
   theme_bw() + 
   theme(
     legend.position="none", 
-    text = element_text( size=35), 
+    text = element_text( size=25), 
     axis.text.x = element_blank(), 
     axis.ticks.x= element_blank()
   ) +
   labs(y = expression("Mean Light (%)"), x = "") +
-  scale_x_date(limits = as.Date(c('2021-07-12','2021-09-01')))
+  scale_x_date(limits = as.Date(c('2021-07-15','2021-09-02')))
 enviro_light
 
 # DO 
@@ -400,15 +400,15 @@ enviro_DO <- ggplot(daily_DO, aes(x=as.Date(date), y=mean_DO, color=depth)) +
   theme_bw() +
   theme(
     legend.position="none", 
-    text = element_text(size=35), 
+    text = element_text(size=25), 
   ) + 
   labs(y = "Mean Dissolved Oxygen (mg/L)", x = "Date") +
-  scale_x_date(limits = as.Date(c('2021-07-12','2021-09-01')))
+  scale_x_date(limits = as.Date(c('2021-07-15','2021-09-02')))
 
 #combine ecotype and treatment 
 enviro_arrange <- plot_grid(enviro_temp, enviro_light, enviro_DO, 
                             ncol = 1, align = "v",
-                            labels = c("a", "b", "c"),  label_size = 35, label_x = 0.11, label_y = 0.99)
+                            labels = c("a", "b", "c"),  label_size = 25, label_x = 0.11, label_y = 0.99)
 enviro_arrange
 
 # moved save command to include Kd
@@ -507,7 +507,7 @@ kd_plot <- ggplot(data_kd, aes(x = Light.CRRX, y = Depth.CRRX)) +
   labs(x = "Light (μmol quanta m⁻² s⁻¹)",  y = "Depth (m)") + 
   theme_bw() + 
   theme(legend.position="none", 
-        text = element_text(size=35),
+        text = element_text(size=25),
         plot.margin = margin(t = 5.5, r = 25, b = 5.5, l = 5.5)) 
 kd_plot 
 
@@ -537,14 +537,14 @@ kd_plot
 #combine ecotype and treatment 
 enviro_arrange2 <- plot_grid(enviro_temp, enviro_DO, 
                             ncol = 1, align = "v",
-                            labels = c("b", "c"),  label_size = 35, label_x = 0.12, label_y = 0.99)
+                            labels = c("b", "c"),  label_size = 25, label_x = 0.15, label_y = 0.99)
 enviro_arrange2
 
 enviro_arrange_all <- plot_grid(kd_plot, enviro_arrange2, 
                              ncol = 2,
-                             labels = c("a", ""),  label_size = 35, label_x = 0.1, label_y = 0.99)
+                             labels = c("a", ""),  label_size = 25, label_x = 0.12, label_y = 0.99)
 
-ggsave("Fig1_Enviro.jpg", plot = enviro_arrange_all, path = 'GRAPHS/', width = 25, height = 16)
+ggsave("Fig1_Enviro.jpg", plot = enviro_arrange_all, path = 'GRAPHS/', width = 15, height = 10)
 
 # DATA PREP - Phys & morph   -----------------------------------------------------------
 
@@ -985,8 +985,8 @@ biplots <- ggplot(full, aes(x=delt_c, y=delt_n, color=species)) +
   #aes(fill = species, colour = Species))
   theme_bw() + 
   scale_color_manual(values = custom_palette) + 
-  scale_shape_manual(values = c(16,1)) +
-  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_shape_manual(values = c(16,1), labels = c("Host", "Sym")) +
+  scale_linetype_manual(values = c("solid", "dashed"), labels = c("Host", "Symbionts")) +
   labs(x=bquote(bold(~ δ^13 ~ "C (‰)")), y = bquote(bold(~ δ^15 ~ "N (‰)")), color="Species", shape = "Fraction", linetype="Fraction") +
   theme(text = element_text(size=20), 
         legend.key.size = unit(1, "cm"),
@@ -1002,8 +1002,8 @@ biplots <- ggplot(full, aes(x=delt_c, y=delt_n, color=species)) +
                linetype= "dashed", color="black", size=0.5, fill = NA) +  
   theme_bw() + 
   scale_color_manual(values = custom_palette) + 
-  scale_shape_manual(values = c(16,1)) +
-  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_shape_manual(values = c(16,1), labels = c("Host", "Symbiont")) +
+  scale_linetype_manual(values = c("solid", "dashed"), labels = c("Host", "Symbiont")) +
   labs(x=bquote(bold(~ δ^13 ~ "C (‰)")), y = bquote(bold(~ δ^15 ~ "N (‰)")), 
        color="Species", shape = "Fraction", linetype="Fraction") +
   theme(text = element_text(size=20), 
@@ -1031,8 +1031,8 @@ ggsave("Fig3_Biplots.jpg", plot = biplots_annotated, path = 'GRAPHS/', width = 1
 # this step takes a long time (48hrs) 
 
 # set graph theme 
-newtheme <- theme_classic() + theme(text = element_text(size=11,family="Arial"))+
-  theme(axis.text.x = element_text(size=11,colour="black"), axis.text.y = element_text(size=11,colour="black"))+
+newtheme <- theme_classic() + theme(text = element_text(size=25,family="Arial"))+
+  theme(axis.text.x = element_text(size=25,colour="black"), axis.text.y = element_text(size=25,colour="black"))+
   theme(plot.margin = unit(c(5.5,5.5,5.5,20), "pt"))+
   theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=1))+
   theme(panel.background = element_blank())+
@@ -1218,22 +1218,22 @@ boots.ci$Species <- factor(boots.ci$Species,
 #plot ovrelap w/ 95 and 75% CI for each year/species variable
 
 pmain<-ggplot(boots.ci,aes(x=Median.prop,y=Species,xmin=prop.95.lower,xmax=prop.95.upper,color=Species))+
-  geom_errorbarh(linewidth=1.5,height=0)+
+  geom_errorbarh(linewidth=3,height=0)+
   geom_errorbarh(data=boots.ci,mapping=aes(x=Mean.prop,y=Species,
-                                           xmin=prop.75.lower,xmax=prop.75.upper),linewidth=3.5,height=0)+
-  geom_point(aes(fill=Species),size=5,pch=21,col='black')+
+                                           xmin=prop.75.lower,xmax=prop.75.upper),linewidth=5,height=0)+
+  geom_point(aes(fill=Species),size=10,pch=21,col='black')+
   scale_color_manual(values=c("#00a8e8","#2832c2", "#fec506","#74c476","#004418","#ee2363"))+ #fix these colors to match plots
   scale_fill_manual(values=c("#00a8e8","#2832c2", "#fec506","#74c476","#004418","#ee2363"))+ #fix these colors to match plots
   labs(y="", x = "HERS Score")+
   newtheme +
   theme(legend.position=c(0.8, 0.7), 
-        text = element_text(size=15),
+        text = element_text(size=25),
         axis.text.y = element_blank(), axis.title.y = element_blank(), axis.ticks.y = element_blank(),
-        axis.text.x = element_text(size=12) 
+        axis.text.x = element_text(size=20) 
         #axis.title.y = element_bold()
   )+
   geom_text(data=boots.ci, mapping=aes(x=Mean.prop,y=as.factor(Species),
-                                       label=round(Mean.prop,2),vjust=-1.5, hjust=.4))+
+                                       label=round(Mean.prop,2),vjust=-1.5, hjust=.4), size = 8)+
   geom_vline(xintercept=0.5,lty=2)#+
 #annotation_custom(het)+annotation_custom(auto)
 pmain
@@ -1250,7 +1250,7 @@ xdens
 overlap.plot<-insert_xaxis_grob(pmain,xdens,grid::unit(.5,"null"),position="top")
 ggdraw(overlap.plot)
 
-ggsave("Fig4_HERS.jpg", plot = overlap.plot, path = 'GRAPHS/', width = 6, height= 8)
+ggsave("Fig4_HERS.jpg", plot = overlap.plot, path = 'GRAPHS/', width = 10, height= 12)
 
 # DATA ANALYSIS - HERS BY DEPTH --------------------------------------------------------------
 
@@ -1483,198 +1483,7 @@ just_means_species_depth_long <- just_means_species_depth %>% pivot_longer(cols 
 #write.csv(just_means_species_depth_long, "STATS/TLPR21_SIBER_BY_DEPTH.csv", row.names = FALSE)
 just_means_species_depth_long <- read.csv('STATS/TLPR21_SIBER_BY_DEPTH.csv')
   
-# Fig 5 - Ellipse overlap vs. metrics #A --------------------------------------
-
-just_means_morph_long <- just_means_species_depth_long %>%
-  filter(metric == 'mean_D' | metric == 'mean_cor_di' | metric == 'mean_cor_a'| metric == 'mean_cal_di'| metric == 'mean_cal_a')
-
-#just_means_morph_long <- just_means_morph_long  %>% filter(species != 'MCAV') 
-
-neworder <- c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cor_a")
-just_means_morph_long$species <- factor(just_means_morph_long$species, levels = c("MCAV", "OFAV", "OFRA","AAGA",  "PAST", "PPOR"))
-just_means_morph_long$depth <- factor(just_means_morph_long$depth, levels = c("4.57","9.14",  "13.72", "16.76"))
-just_means_mortph_long_Cor_A <- just_means_morph_long %>% filter(metric == "mean_cor_a")
-formula <- y ~ x
-
-my_labeller2 <- as_labeller(c(
-  mean_chl =  "Chlorophyll~a~'(' * mu*g/cm^2 * ')'", 
-  mean_sym =  "Symbiont~density~'(' * cells/cm^2 * ')'", 
-  mean_sym_AFDW =  "Symbiont~Biomass~'(' * mg/cm^2 * ')'", 
-  mean_host_AFDW =  "Host~Biomass~'(' * mg/cm^2 * ')'", 
-  mean_prot =  "Host~Protein~'(' * mg/cm^2 * ')'",  
-  mean_cal_a =  "Calice~Area~'(' * cm^2 * ')'", 
-  mean_cal_di =  "Calice~Diameter~'(' * cm * ')'", 
-  mean_cor_a =  "Corallite~Area~'(' * cm^2 * ')'", 
-  mean_cor_di =  "Corallite~Diameter~'(' * cm * ')'", 
-  mean_D =  "Corallite~Density~'(' * per~cm^2 * ')'"),
-  default = label_parsed)
-
-# graph overlap with each of the other metrics (one point per species per depth)
-metric_overlap <- ggplot(just_means_morph_long, aes(x = overlap, y = value)) + 
-  facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
-             scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
-  geom_smooth(method = "lm", formula = formula, color="black") +
-  geom_point(aes(color = species), size = 3) + #, shape = depth
-  scale_color_manual(values = custom_palette) +
-  # stat_fit_glance( method = "lm", method.args = list(formula = formula), geom = "text",
-  #   aes(label = paste(
-  #       "R² = ", signif(..r.squared.., digits = 2),
-  #       "P = ", signif(..p.value.., digits = 3), 
-  #       sep = " ")),size = 4, hjust = 0) +
-  theme_bw() +
-  theme(text = element_text(size=20), 
-        strip.background = element_blank(), strip.text= element_text(face="bold"),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        strip.placement = "outside"
-  ) +
-  labs(x = "Ellipse Overlap (%)", y = "", color = "Species", shape = "Depth (m)")
-
-metric_cent <- ggplot(just_means_morph_long, aes(x = centroid_distance, y = value)) + 
-  facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
-             scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
-  geom_smooth(method = "lm", formula = formula, color="black") +
-  geom_point(aes(color = species), size = 3) + #, shape = depth
-  scale_color_manual(values = custom_palette) +
-  # stat_fit_glance( method = "lm", method.args = list(formula = formula), geom = "text",
-  #   aes(label = paste(
-  #       "R² = ", signif(..r.squared.., digits = 2),
-  #       "P = ", signif(..p.value.., digits = 3), 
-  #       sep = " ")),size = 4, hjust = 0) +
-  theme_bw() +
-  theme(text = element_text(size=20), 
-        strip.background = element_blank(), strip.text= element_text(face="bold"),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        strip.placement = "outside"
-  ) +
-  labs(x = "Centroid Distance (‰)", y = "", color = "Species", shape = "Depth (m)")
-
-### REMOVE MCAV FOR Calice metrics 
-
-just_means_morph_long_cal <- just_means_morph_long  %>% 
-  filter(species != 'MCAV') %>%
-  filter(metric == 'mean_cal_di'| metric == 'mean_cal_a')
-
-just_means_morph_long_cal$species <- factor(just_means_morph_long_cal$species, levels = c("MCAV", "OFAV", "OFRA","AAGA",  "PAST", "PPOR"))
-
-
-# graph overlap with each of the other metrics (one point per species per depth)
-metric_overlap_cal <- ggplot(just_means_morph_long_cal, aes(x = overlap, y = value)) + 
-  facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
-             scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
-  geom_smooth(method = "lm", formula = formula, color="black") +
-  geom_point(aes(color = species), size = 3) + #, shape = depth
-  scale_color_manual(values = custom_palette) +
-  stat_fit_glance(
-    method = "lm",
-    method.args = list(formula = formula),
-    geom = "text",
-    aes(
-      label = paste(
-        "R² = ", signif(..r.squared.., digits = 2),
-        "P = ", signif(..p.value.., digits = 3), 
-        sep = " ")),
-    size = 4, hjust = 0, #vjust = 1
-  ) +
-  theme_bw() +
-  theme(text = element_text(size=20), 
-        strip.background = element_blank(), strip.text= element_text(face="bold"),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        strip.placement = "outside",
-        legend.position = "none"
-  ) +
-  labs(x = "Ellipse Overlap (%)", y = "", color = "Species", shape = "Depth (m)")
-metric_overlap_cal
-
-metric_cent_cal <- ggplot(just_means_morph_long_cal, aes(x = centroid_distance, y = value)) + 
-  facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
-             scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
-  geom_smooth(method = "lm", formula = formula, color="black") +
-  geom_point(aes(color = species), size = 3) + #, shape = depth
-  scale_color_manual(values = custom_palette) +
-  stat_fit_glance(
-    method = "lm",
-    method.args = list(formula = formula),
-    geom = "text",
-    aes(
-      label = paste(
-        "R² = ", signif(..r.squared.., digits = 2),
-        "P = ", signif(..p.value.., digits = 3), 
-        sep = " ")),
-    size = 4, hjust = 0, #vjust = 1
-  ) +
-  theme_bw() +
-  theme(text = element_text(size=20), 
-        strip.background = element_blank(), strip.text= element_text(face="bold"),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_text(face = "bold"),
-        strip.placement = "outside", 
-        legend.position = "none"
-  ) +
-  labs(x = "Centroid Distance (‰)", y = "", color = "Species", shape = "Depth (m)")
-metric_cent_cal
-
-metric_SIBER <- plot_grid(metric_cent, metric_overlap, ncol = 1)
-metric_SIBER_cal <- plot_grid(metric_cent_cal, metric_overlap_cal, ncol = 1)
-metric_SIBER_both <- plot_grid(metric_SIBER, metric_SIBER_cal, ncol = 2, rel_widths = c(.7,.3))
-
-metric_SIBER_annotated <- ggdraw(metric_SIBER) +
-  draw_label("*", x = 0.14, y = .96, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.31, y = .96, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.49, y = .96, fontface = "bold", size = 50) +
-  draw_label("*", x = 0.14, y = .45, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.31, y = .45, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.49, y = .45, fontface = "bold", size = 50) 
-
-metric_SIBER_annotated
-
-ggsave("Fig5a_metric_cent_overlap.jpg", plot = metric_SIBER_annotated, path = 'GRAPHS/', width = 18, height =10)
-
-
-### simplified version for my defense 
-
-CA_overlap <- ggplot(just_means_mortph_long_Cor_A, aes(x=value, y = overlap)) + 
-                       geom_smooth(method = "lm", formula = formula, color="black") +
-                       geom_point(aes(color = species, shape = depth), size = 3) +
-                       scale_color_manual(values = custom_palette) +
-                       theme_bw() +
-                       theme(text = element_text(size=20), 
-                             strip.background = element_blank(), strip.text= element_text(face="bold"),
-                             axis.title.y = element_text(face = "bold"),
-                             axis.title.x = element_text(face = "bold"),
-                             strip.placement = "outside",
-                             legend.position = "none"
-                       ) +
-                       labs(y = "Ellipse Overlap (%)", x = "Corallite Area (cm²)", color = "Species", shape = "Depth (m)")
-CA_overlap
-
-CA_centroid <- ggplot(just_means_mortph_long_Cor_A, aes(x=value, y = centroid_distance)) + 
-  geom_smooth(method = "lm", formula = formula, color="black") +
-  geom_point(aes(color = species, shape = depth), size = 3) +
-  scale_color_manual(values = custom_palette) +
-  theme_bw() +
-  theme(text = element_text(size=20), 
-        strip.background = element_blank(), strip.text= element_text(face="bold"),
-        axis.title.y = element_text(face = "bold"),
-        axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank(), 
-        strip.placement = "outside",
-        legend.position = "none"
-  ) +
-  labs(y = "Centroid Distance (‰)", x = "Corallite Area (cm²)", color = "Species", shape = "Depth (m)")
-CA_centroid
-
-# save grpahs 
-metric_SIBER_CA <- plot_grid( CA_centroid, CA_overlap, ncol = 1, align = "v")
-metric_SIBER_CA
-
-#ggsave("TLPR21_FigX_cor_area_SIBER.jpg", plot = metric_SIBER_CA, path = 'GRAPHS/', width = 5, height =10)
-
-
-
-
-# Fig 5 - Ellipse overlap vs. metrics #B  --------------------------------------
+# Fig 5 - Ellipse overlap vs. metrics  --------------------------------------
 
 just_means_morph_long <- just_means_species_depth_long %>%
   filter(metric == 'mean_D' | metric == 'mean_cor_di' | metric == 'mean_cor_a'| metric == 'mean_cal_di'| metric == 'mean_cal_a')
@@ -1707,115 +1516,31 @@ my_labeller2 <- as_labeller(c(
 metric_SIBER <- ggplot(all_long, aes(x = Correlation, y = value)) + 
   facet_grid(vars(factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a"))), vars(Variable), 
              scales="free",  labeller = my_labeller2, switch = "both") +
-  geom_point(aes(shape = depth, color = species), size = 2) +
+  geom_point(aes(shape = depth, color = species), size = 4) +
   geom_smooth(method = "lm", formula = formula, color="black", size = 2, alpha = 0.2) +
   theme_bw() +
-  theme(text = element_text(size = 16), 
+  theme(text = element_text(size = 25), 
         strip.placement = "outside", 
         strip.background = element_blank(), 
-        strip.text.x = element_text(face="bold", size = 15),  
-        strip.text.y = element_text(face="bold", size = 16),
+        strip.text.x = element_text(face="bold", size = 25),  
+        strip.text.y = element_text(face="bold", size = 25),
         #legend.position=c(0.88,0.795), 
         #legend.box.background = element_rect(color="black", size=1.5)
         ) + 
-  labs(x = "", y = "", color = "Species", shape = "Depth") +
+  labs(x = "", y = "", color = "Species", shape = "Depth (m)") +
   scale_color_manual(values = custom_palette) 
 
 metric_SIBER_annotated <- ggdraw(metric_SIBER) +
-  draw_label("*", x = 0.23, y = .818, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.55, y = .818, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.23, y = .633, fontface = "bold", size = 50) +
-  draw_label("*", x = 0.55, y = .633, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.23, y = .448, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.55, y = .448, fontface = "bold", size = 50) 
+  draw_label("*", x = 0.21, y = .82, fontface = "bold", size = 70) + 
+  draw_label("*", x = 0.52, y = .82, fontface = "bold", size = 70) + 
+  draw_label("*", x = 0.21, y = .635, fontface = "bold", size = 70) +
+  draw_label("*", x = 0.52, y = .635, fontface = "bold", size = 70) + 
+  draw_label("*", x = 0.21, y = .45, fontface = "bold", size = 70) + 
+  draw_label("*", x = 0.52, y = .45, fontface = "bold", size = 70) 
 
 metric_SIBER_annotated
 
-ggsave("Fig5b_metric_cent_overlap.jpg", plot = metric_SIBER_annotated, path = 'GRAPHS/', width = 6.5, height =16)
-
-
-# Fig 5 - Ellipse overlap vs. metrics #C ----------------------------------------------------------------
-
-my_labeller_justD <- as_labeller(c(
-  mean_D =  "Corallite Density (per cm²)",
-  overlap =  "Ellipse Overlap (%)", 
-  centroid_distance =  "Centroid Distance (‰)"),
-  default = label_value  # This will preserve the line breaks
-)
-
-D_long <- all_long %>% filter(metric == "mean_D")
-
-metric_SIBER_justD <- ggplot(D_long, aes(x = Correlation, y = value)) + 
-  facet_grid(vars(factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a"))), vars(Variable), 
-             scales="free",  labeller = my_labeller_justD , switch = "both") +
-  geom_point(aes(color = species), size = 2) +
-  geom_smooth(method = "lm", formula = formula, color="black", size = 2, alpha = 0.2) +
-  theme_bw() +
-  theme(text = element_text(size = 16), 
-        strip.placement = "outside", 
-        strip.background = element_blank(), 
-        strip.text.x = element_text(face="bold", size = 15),  
-        strip.text.y = element_text(face="bold", size = 16),
-        legend.position=c(0.9,0.12), 
-        legend.box.background = element_rect(color="black", size=1.5)
-  ) + 
-  labs(x = NULL, y = NULL, color = "Species") +
-  scale_color_manual(values = custom_palette) 
-
-metric_SIBER_justD_annotated <- ggdraw(metric_SIBER_justD ) +
-  draw_label("*", x = 0.35, y = .95, fontface = "bold", size = 50) + 
-  draw_label("*", x = 0.78, y = .95, fontface = "bold", size = 50) 
-
-metric_SIBER_justD_annotated 
-
-## 
-
-my_labeller_notD <- as_labeller(c(
-  mean_cal_a =  "Calice Area", 
-  mean_cal_di =  "Calice Diameter", 
-  mean_cor_a =  "Corallite Area", 
-  mean_cor_di =  "Corallite Diameter", 
-  mean_D =  "Corallite Density",
-  overlap =  "Ellipse \nOverlap", 
-  centroid_distance =  "Centroid \nDistance"),
-  default = label_value  # This will preserve the line breaks
-)
-
-not_D <- all_long %>% filter(metric != "mean_D")
-
-metric_SIBER_notD <- ggplot(not_D, aes(x = Correlation, y = value)) + 
-  facet_grid(vars(factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a"))), vars(Variable), 
-             scales="free",  labeller = my_labeller_notD, switch = "both") +
-  geom_point(size = 0.5) +
-  geom_smooth(method = "lm", formula = formula, color="black", size = 2, alpha = 0.2) +
-  theme_classic() +
-  theme(text = element_text(size = 12), 
-        strip.placement = "outside", 
-        strip.background = element_blank(), 
-        strip.text.x = element_text(face="bold", size = 12),  
-        strip.text.y = element_text(face="bold", size = 12),
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.ticks.y = element_blank()
-        #legend.position=c(0.88,0.795), 
-        #legend.box.background = element_rect(color="black", size=1.5)
-  ) + 
-  labs(x = NULL, y = NULL) 
-
-metric_SIBER_notD_annotated <- ggdraw(metric_SIBER_notD) +
-  draw_label("*", x = 0.21, y = .97, fontface = "bold", size = 40) + 
-  draw_label("*", x = 0.21, y = .735, fontface = "bold", size = 40) + 
-  draw_label("*", x = 0.88, y = .97, fontface = "bold", size = 40) + 
-  draw_label("*", x = 0.88, y = .735, fontface = "bold", size = 40) 
-
-metric_SIBER_annotated
-
-metric_SIBER_simple <- plot_grid( metric_SIBER_justD_annotated , metric_SIBER_notD_annotated , labels = c("A", "B"), ncol = 2, rel_widths = c(1, 0.4), align = "v")
-
-ggsave("Fig5c_metric_cent_overlap.jpg", plot = metric_SIBER_simple, path = 'GRAPHS/', width = 10, height =10)
-
-
+ggsave("Fig5_metric_cent_overlap.jpg", plot = metric_SIBER_annotated, path = 'GRAPHS/', width = 10, height =20)
 
 # Fig S8 SIBER by Depth ---------------------------------------------------
 
@@ -2708,4 +2433,278 @@ ggplot(raw2_pp, aes(y = chl.D, x = act_light)) +
   facet_wrap(~species, scales = "free", ncol= 6) + 
   stat_cor(aes(label = paste(after_stat(rr.label), after_stat(p.label), 
                              sep = "~`,`~")))
+
+# Fig 5 - Ellipse overlap vs. metrics #C ----------------------------------------------------------------
+
+my_labeller_justD <- as_labeller(c(
+  mean_D =  "Corallite Density (per cm²)",
+  overlap =  "Ellipse Overlap (%)", 
+  centroid_distance =  "Centroid Distance (‰)"),
+  default = label_value  # This will preserve the line breaks
+)
+
+D_long <- all_long %>% filter(metric == "mean_D")
+
+metric_SIBER_justD <- ggplot(D_long, aes(x = Correlation, y = value)) + 
+  facet_grid(vars(factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a"))), vars(Variable), 
+             scales="free",  labeller = my_labeller_justD , switch = "both") +
+  geom_point(aes(color = species), size = 2) +
+  geom_smooth(method = "lm", formula = formula, color="black", size = 2, alpha = 0.2) +
+  theme_bw() +
+  theme(text = element_text(size = 16), 
+        strip.placement = "outside", 
+        strip.background = element_blank(), 
+        strip.text.x = element_text(face="bold", size = 15),  
+        strip.text.y = element_text(face="bold", size = 16),
+        legend.position=c(0.9,0.12), 
+        legend.box.background = element_rect(color="black", size=1.5)
+  ) + 
+  labs(x = NULL, y = NULL, color = "Species") +
+  scale_color_manual(values = custom_palette) 
+
+metric_SIBER_justD_annotated <- ggdraw(metric_SIBER_justD ) +
+  draw_label("*", x = 0.35, y = .95, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.78, y = .95, fontface = "bold", size = 50) 
+
+metric_SIBER_justD_annotated 
+
+## 
+
+my_labeller_notD <- as_labeller(c(
+  mean_cal_a =  "Calice Area", 
+  mean_cal_di =  "Calice Diameter", 
+  mean_cor_a =  "Corallite Area", 
+  mean_cor_di =  "Corallite Diameter", 
+  mean_D =  "Corallite Density",
+  overlap =  "Ellipse \nOverlap", 
+  centroid_distance =  "Centroid \nDistance"),
+  default = label_value  # This will preserve the line breaks
+)
+
+not_D <- all_long %>% filter(metric != "mean_D")
+
+metric_SIBER_notD <- ggplot(not_D, aes(x = Correlation, y = value)) + 
+  facet_grid(vars(factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a"))), vars(Variable), 
+             scales="free",  labeller = my_labeller_notD, switch = "both") +
+  geom_point(size = 0.5) +
+  geom_smooth(method = "lm", formula = formula, color="black", size = 2, alpha = 0.2) +
+  theme_classic() +
+  theme(text = element_text(size = 12), 
+        strip.placement = "outside", 
+        strip.background = element_blank(), 
+        strip.text.x = element_text(face="bold", size = 12),  
+        strip.text.y = element_text(face="bold", size = 12),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank()
+        #legend.position=c(0.88,0.795), 
+        #legend.box.background = element_rect(color="black", size=1.5)
+  ) + 
+  labs(x = NULL, y = NULL) 
+
+metric_SIBER_notD_annotated <- ggdraw(metric_SIBER_notD) +
+  draw_label("*", x = 0.21, y = .97, fontface = "bold", size = 40) + 
+  draw_label("*", x = 0.21, y = .735, fontface = "bold", size = 40) + 
+  draw_label("*", x = 0.88, y = .97, fontface = "bold", size = 40) + 
+  draw_label("*", x = 0.88, y = .735, fontface = "bold", size = 40) 
+
+metric_SIBER_annotated
+
+metric_SIBER_simple <- plot_grid( metric_SIBER_justD_annotated , metric_SIBER_notD_annotated , labels = c("A", "B"), ncol = 2, rel_widths = c(1, 0.4), align = "v")
+
+ggsave("Fig5c_metric_cent_overlap.jpg", plot = metric_SIBER_simple, path = 'GRAPHS/old_graphs/', width = 10, height =10)
+
+# Fig 5 - Ellipse overlap vs. metrics #A --------------------------------------
+
+just_means_morph_long <- just_means_species_depth_long %>%
+  filter(metric == 'mean_D' | metric == 'mean_cor_di' | metric == 'mean_cor_a'| metric == 'mean_cal_di'| metric == 'mean_cal_a')
+
+#just_means_morph_long <- just_means_morph_long  %>% filter(species != 'MCAV') 
+
+neworder <- c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cor_a")
+just_means_morph_long$species <- factor(just_means_morph_long$species, levels = c("MCAV", "OFAV", "OFRA","AAGA",  "PAST", "PPOR"))
+just_means_morph_long$depth <- factor(just_means_morph_long$depth, levels = c("4.57","9.14",  "13.72", "16.76"))
+just_means_mortph_long_Cor_A <- just_means_morph_long %>% filter(metric == "mean_cor_a")
+formula <- y ~ x
+
+my_labeller2 <- as_labeller(c(
+  mean_chl =  "Chlorophyll~a~'(' * mu*g/cm^2 * ')'", 
+  mean_sym =  "Symbiont~density~'(' * cells/cm^2 * ')'", 
+  mean_sym_AFDW =  "Symbiont~Biomass~'(' * mg/cm^2 * ')'", 
+  mean_host_AFDW =  "Host~Biomass~'(' * mg/cm^2 * ')'", 
+  mean_prot =  "Host~Protein~'(' * mg/cm^2 * ')'",  
+  mean_cal_a =  "Calice~Area~'(' * cm^2 * ')'", 
+  mean_cal_di =  "Calice~Diameter~'(' * cm * ')'", 
+  mean_cor_a =  "Corallite~Area~'(' * cm^2 * ')'", 
+  mean_cor_di =  "Corallite~Diameter~'(' * cm * ')'", 
+  mean_D =  "Corallite~Density~'(' * per~cm^2 * ')'"),
+  default = label_parsed)
+
+# graph overlap with each of the other metrics (one point per species per depth)
+metric_overlap <- ggplot(just_means_morph_long, aes(x = overlap, y = value)) + 
+  facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
+             scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
+  geom_smooth(method = "lm", formula = formula, color="black") +
+  geom_point(aes(color = species), size = 3) + #, shape = depth
+  scale_color_manual(values = custom_palette) +
+  # stat_fit_glance( method = "lm", method.args = list(formula = formula), geom = "text",
+  #   aes(label = paste(
+  #       "R² = ", signif(..r.squared.., digits = 2),
+  #       "P = ", signif(..p.value.., digits = 3), 
+  #       sep = " ")),size = 4, hjust = 0) +
+  theme_bw() +
+  theme(text = element_text(size=20), 
+        strip.background = element_blank(), strip.text= element_text(face="bold"),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_text(face = "bold"),
+        strip.placement = "outside"
+  ) +
+  labs(x = "Ellipse Overlap (%)", y = "", color = "Species", shape = "Depth (m)")
+
+metric_cent <- ggplot(just_means_morph_long, aes(x = centroid_distance, y = value)) + 
+  facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
+             scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
+  geom_smooth(method = "lm", formula = formula, color="black") +
+  geom_point(aes(color = species), size = 3) + #, shape = depth
+  scale_color_manual(values = custom_palette) +
+  # stat_fit_glance( method = "lm", method.args = list(formula = formula), geom = "text",
+  #   aes(label = paste(
+  #       "R² = ", signif(..r.squared.., digits = 2),
+  #       "P = ", signif(..p.value.., digits = 3), 
+  #       sep = " ")),size = 4, hjust = 0) +
+  theme_bw() +
+  theme(text = element_text(size=20), 
+        strip.background = element_blank(), strip.text= element_text(face="bold"),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_text(face = "bold"),
+        strip.placement = "outside"
+  ) +
+  labs(x = "Centroid Distance (‰)", y = "", color = "Species", shape = "Depth (m)")
+
+### REMOVE MCAV FOR Calice metrics 
+
+just_means_morph_long_cal <- just_means_morph_long  %>% 
+  filter(species != 'MCAV') %>%
+  filter(metric == 'mean_cal_di'| metric == 'mean_cal_a')
+
+just_means_morph_long_cal$species <- factor(just_means_morph_long_cal$species, levels = c("MCAV", "OFAV", "OFRA","AAGA",  "PAST", "PPOR"))
+
+
+# graph overlap with each of the other metrics (one point per species per depth)
+metric_overlap_cal <- ggplot(just_means_morph_long_cal, aes(x = overlap, y = value)) + 
+  facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
+             scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
+  geom_smooth(method = "lm", formula = formula, color="black") +
+  geom_point(aes(color = species), size = 3) + #, shape = depth
+  scale_color_manual(values = custom_palette) +
+  stat_fit_glance(
+    method = "lm",
+    method.args = list(formula = formula),
+    geom = "text",
+    aes(
+      label = paste(
+        "R² = ", signif(..r.squared.., digits = 2),
+        "P = ", signif(..p.value.., digits = 3), 
+        sep = " ")),
+    size = 4, hjust = 0, #vjust = 1
+  ) +
+  theme_bw() +
+  theme(text = element_text(size=20), 
+        strip.background = element_blank(), strip.text= element_text(face="bold"),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_text(face = "bold"),
+        strip.placement = "outside",
+        legend.position = "none"
+  ) +
+  labs(x = "Ellipse Overlap (%)", y = "", color = "Species", shape = "Depth (m)")
+metric_overlap_cal
+
+metric_cent_cal <- ggplot(just_means_morph_long_cal, aes(x = centroid_distance, y = value)) + 
+  facet_wrap(~factor(metric, c("mean_D","mean_cor_di","mean_cor_a", "mean_cal_di", "mean_cal_a")),
+             scales = "free", nrow = 1,  labeller = my_labeller2, strip.position = "left") +
+  geom_smooth(method = "lm", formula = formula, color="black") +
+  geom_point(aes(color = species), size = 3) + #, shape = depth
+  scale_color_manual(values = custom_palette) +
+  stat_fit_glance(
+    method = "lm",
+    method.args = list(formula = formula),
+    geom = "text",
+    aes(
+      label = paste(
+        "R² = ", signif(..r.squared.., digits = 2),
+        "P = ", signif(..p.value.., digits = 3), 
+        sep = " ")),
+    size = 4, hjust = 0, #vjust = 1
+  ) +
+  theme_bw() +
+  theme(text = element_text(size=20), 
+        strip.background = element_blank(), strip.text= element_text(face="bold"),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_text(face = "bold"),
+        strip.placement = "outside", 
+        legend.position = "none"
+  ) +
+  labs(x = "Centroid Distance (‰)", y = "", color = "Species", shape = "Depth (m)")
+metric_cent_cal
+
+metric_SIBER <- plot_grid(metric_cent, metric_overlap, ncol = 1)
+metric_SIBER_cal <- plot_grid(metric_cent_cal, metric_overlap_cal, ncol = 1)
+metric_SIBER_both <- plot_grid(metric_SIBER, metric_SIBER_cal, ncol = 2, rel_widths = c(.7,.3))
+
+metric_SIBER_annotated <- ggdraw(metric_SIBER) +
+  draw_label("*", x = 0.14, y = .96, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.31, y = .96, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.49, y = .96, fontface = "bold", size = 50) +
+  draw_label("*", x = 0.14, y = .45, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.31, y = .45, fontface = "bold", size = 50) + 
+  draw_label("*", x = 0.49, y = .45, fontface = "bold", size = 50) 
+
+metric_SIBER_annotated
+
+ggsave("Fig5a_metric_cent_overlap.jpg", plot = metric_SIBER_annotated, path = 'GRAPHS/old_graphs/', width = 18, height =10)
+
+
+### simplified version for my defense 
+
+CA_overlap <- ggplot(just_means_mortph_long_Cor_A, aes(x=value, y = overlap)) + 
+  geom_smooth(method = "lm", formula = formula, color="black") +
+  geom_point(aes(color = species, shape = depth), size = 3) +
+  scale_color_manual(values = custom_palette) +
+  theme_bw() +
+  theme(text = element_text(size=20), 
+        strip.background = element_blank(), strip.text= element_text(face="bold"),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_text(face = "bold"),
+        strip.placement = "outside",
+        legend.position = "none"
+  ) +
+  labs(y = "Ellipse Overlap (%)", x = "Corallite Area (cm²)", color = "Species", shape = "Depth (m)")
+CA_overlap
+
+CA_centroid <- ggplot(just_means_mortph_long_Cor_A, aes(x=value, y = centroid_distance)) + 
+  geom_smooth(method = "lm", formula = formula, color="black") +
+  geom_point(aes(color = species, shape = depth), size = 3) +
+  scale_color_manual(values = custom_palette) +
+  theme_bw() +
+  theme(text = element_text(size=20), 
+        strip.background = element_blank(), strip.text= element_text(face="bold"),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank(), 
+        strip.placement = "outside",
+        legend.position = "none"
+  ) +
+  labs(y = "Centroid Distance (‰)", x = "Corallite Area (cm²)", color = "Species", shape = "Depth (m)")
+CA_centroid
+
+# save grpahs 
+metric_SIBER_CA <- plot_grid( CA_centroid, CA_overlap, ncol = 1, align = "v")
+metric_SIBER_CA
+
+#ggsave("TLPR21_FigX_cor_area_SIBER.jpg", plot = metric_SIBER_CA, path = 'GRAPHS/', width = 5, height =10)
+
+
+
+
+
 
